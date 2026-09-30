@@ -1,0 +1,37 @@
+# The declaration the shipped results were produced from.
+#
+# Everything under [job] changes what the output means. Changing any of it is a
+# change to the numbers the business reads, and the review should treat it that
+# way.
+#
+# Everything under [runtime] is supposed to be operational. That is the belief
+# this repository was built to test, and the answer is in the README: the two
+# runtime settings below move 38 percent of the output rows.
+
+[job]
+# Five-minute tumbling windows. Chosen because it is the coarsest window that
+# still lets an operator see a partition stall inside one dashboard refresh.
+window_ms = 300000
+
+# Thirty seconds of quiet closes a session. This is a processing-time gap, which
+# is the decision ADR-004 argues should never have been made.
+session_gap_ms = 30000
+
+# Thirty seconds of allowed lateness. Measured out-of-orderness on this log runs
+# past a minute, so this setting is already too tight, and that is deliberate:
+# it is the setting the team picked in week one from the shape of a quiet
+# afternoon, and nobody has looked at it since.
+allowed_lateness_ms = 30000
+
+# A single global watermark across all four partitions. The alternative is one
+# watermark per partition, which keeps the records a stalled partition would
+# otherwise lose. Experiment 4 measures the difference.
+per_partition = false
+
+[runtime]
+# The live job triggers every ten seconds.
+trigger_interval_ms = 10000
+
+# A replay reads five thousand records per batch. Nothing chose this number; it
+# is what the default gives on a topic this size, which is the point.
+replay_batch_records = 5000
