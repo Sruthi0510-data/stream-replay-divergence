@@ -243,3 +243,70 @@ def test_a_rewrite_window_is_frozen():
     window = RewriteWindow(identities=(), span_ms=0, earliest_ms=0, latest_ms=0, emitted_rows=0)
     with pytest.raises(AttributeError):
         window.span_ms = 5
+
+
+def _shipped_runs():
+    """The shipped fixture, one original run and several replays.
+
+    Built here rather than in a fixture because only two tests need it and both
+    of them are about the same discovery, so keeping the construction next to
+    them saves a reader a trip to conftest.
+    """
+    from srd.batching import ThroughputBatcher, WallClockBatcher, as_observed
+    from srd.compare import compare as compare_runs
+    from srd.generator import generate
+    from srd.job import JobConfig
+    from srd.job import run as run_job
+
+    events = generate()
+    config = JobConfig(
+        window_ms=300_000,
+        session_gap_ms=30_000,
+        watermark=WatermarkPolicy(allowed_lateness_ms=30_000),
+    )
+    logged = [event.logged for event in events]
+    original = run_job(config, WallClockBatcher(interval_ms=10_000), events)
+    replays = [
+        run_job(config, ThroughputBatcher(max_records=size), as_observed(logged))
+        for size in (250, 1_000, 5_000, 20_000, 30_000)
+    ]
+    report = classify(EventLog(tuple(logged)), config.watermark)
+    window = rewrite_window(report, window_ms=config.window_ms, emitted_rows=len(original.windows))
+    return original, replays, window, compare_runs
+
+
+def test_the_window_bounds_what_two_replays_can_disagree_about():
+    """The scope the classification actually covers.
+
+    Five replays at batch sizes spanning two orders of magnitude, every pair
+    compared. Not one differing row falls outside the window, which is what the
+    theorem promises for a fixed processing order.
+    """
+    from itertools import combinations
+
+    _, replays, window, compare_runs = _shipped_runs()
+    reachable = set(window.identities)
+    outside = [
+        (diff.window_start_ms, diff.key)
+        for left, right in combinations(replays, 2)
+        for diff in compare_runs(left, right).rows
+        if (diff.window_start_ms, diff.key) not in reachable
+    ]
+    assert outside == []
+
+
+def test_the_window_does_not_bound_divergence_from_the_original_run():
+    """The scope it does not cover, and the reason the module exists.
+
+    The original processed in arrival order. That ordering is not in the log, so
+    no function in this module can see it, and the rows that actually differ
+    outnumber the reachable ones several times over. An earlier version of
+    RewriteWindow claimed otherwise; this is the test that caught it, and it is
+    written as an assertion about the gap rather than a comment about it so that
+    a future change cannot quietly restore the wrong claim.
+    """
+    original, replays, window, compare_runs = _shipped_runs()
+    reachable = set(window.identities)
+    diverged = {(diff.window_start_ms, diff.key) for diff in compare_runs(original, replays[2]).rows}
+    assert not diverged <= reachable
+    assert len(diverged) > 4 * len(reachable)

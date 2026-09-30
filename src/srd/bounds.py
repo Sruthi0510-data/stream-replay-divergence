@@ -32,11 +32,32 @@ every record in it, including every record the original run discarded. This is
 not a tuning problem and no setting fixes it: allowed lateness only moves the
 line, and the single-batch watermark starts below every line.
 
-The practical reading is short. Reprocessing from the log does not reproduce
-what the job did. It re-decides, from a position that is strictly more
-forgiving, and it re-decides differently for exactly the contingent records.
-`contingent_share` counts them, and `rewrite_window` says which part of the
-output table they can reach.
+Now the part that took a failing test to notice, and that is the reason this
+module is worth more than the theorem it proves.
+
+The quantifier ranges over batchings of a *fixed processing order*. Every replay
+reads a partition forwards, so every replay shares one processing order, namely
+offset order, and the classification above bounds exactly what any two replays
+can disagree about. That bound is real and it is tight: `test_bounds.py` pins it
+against brute force, and the experiments confirm that across five replays at
+batch sizes from 250 to 30,000 records, not one differing row falls outside the
+window this module computes.
+
+The original run did not process in offset order. It processed in arrival order,
+which is a different permutation of the same records, and the permutation is not
+in the log. So the bound says nothing whatever about how far a replay can drift
+from the original, and on the shipped fixture it understates that drift by a
+factor of four and a half: 73 rows are reachable by the bound, 331 rows actually
+differ.
+
+The useful statement is therefore uncomfortable rather than reassuring. An
+operator can compute, before reprocessing anything, exactly how far one
+reprocessing can land from another. They cannot compute how far either lands
+from the run that produced the table they already have, because the quantity
+that would tell them is the arrival ordering, and that was never written down.
+`contingent_share` counts the records in play; `rewrite_window` says which rows
+two replays can disagree about; neither is a bound on the thing anybody actually
+wants bounded.
 """
 
 from __future__ import annotations
@@ -167,16 +188,26 @@ def classify(log: EventLog | Sequence[LoggedEvent], policy: WatermarkPolicy) -> 
 
 @dataclass(frozen=True, slots=True)
 class RewriteWindow:
-    """The part of the output table that reprocessing can reach.
+    """The rows two replays of the same log can disagree about.
 
     `identities` are the (window start, key) pairs holding at least one
-    contingent record, so they are exactly the rows whose numbers a replay can
-    change. `span_ms` is how wide a stretch of event time they cover, which is
-    the number to put in a runbook: outside it, reprocessing is safe.
+    contingent record. Read the scope carefully: these are the rows on which one
+    reprocessing can differ from another reprocessing, because both read the log
+    in offset order and the classification quantifies over batchings of that one
+    order.
 
-    `reachable_share` is that count over the number of rows the original run
-    emitted, not over the number of rows in the universe, because the question
-    an operator asks is what fraction of the table they already have is at risk.
+    They are not the rows on which a replay can differ from the original run.
+    The original processed in arrival order, that ordering is not in the log, and
+    on the shipped fixture the rows that actually differ outnumber these by four
+    and a half to one. An early draft of this class claimed the wider scope, and
+    the test that now lives in `test_bounds.py` as
+    `test_the_window_does_not_bound_divergence_from_the_original_run` is the one
+    that caught it.
+
+    `span_ms` is how wide a stretch of event time the reachable rows cover, and
+    `reachable_share` is their count over the number of rows the original run
+    emitted, because the question an operator asks is what fraction of the table
+    they already have is in play.
     """
 
     identities: tuple[tuple[int, str], ...]
@@ -198,7 +229,7 @@ def rewrite_window(
     window_ms: int,
     emitted_rows: int,
 ) -> RewriteWindow:
-    """Turn a fate report into the set of output rows a replay can rewrite.
+    """Turn a fate report into the rows two replays can disagree about.
 
     Takes the emitted row count as an argument rather than computing it, because
     the number that belongs in the denominator is the size of the table the
