@@ -1,0 +1,18 @@
+{
+  "records": 30000,
+  "original_rows": 787,
+  "replay_rows": 820,
+  "stable_rows": 508,
+  "replay_stable_share": 0.6195121951219512,
+  "diverged_rows": 312,
+  "rows_changed_by_drops": 270,
+  "rows_changed_by_ties": 9,
+  "rows_only_in_replay": 33,
+  "rows_only_in_original": 0,
+  "keys_with_a_changed_row": 12,
+  "original_sessions": 205,
+  "replay_sessions": 12,
+  "session_loss_share": 0.9414634146341463,
+  "replay_dropped": 8,
+  "replay_batches": 6
+}

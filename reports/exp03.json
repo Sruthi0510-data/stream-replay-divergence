@@ -1,0 +1,95 @@
+{
+  "records_per_point": 12000,
+  "by_lateness": [
+    {
+      "allowed_lateness_ms": 5000,
+      "replay_stable_share": 0.0024390243902439024,
+      "original_drop_rate": 0.4871666666666667,
+      "diverged_rows": 818,
+      "rows_changed_by_ties": 0
+    },
+    {
+      "allowed_lateness_ms": 15000,
+      "replay_stable_share": 0.054878048780487805,
+      "original_drop_rate": 0.25975,
+      "diverged_rows": 775,
+      "rows_changed_by_ties": 1
+    },
+    {
+      "allowed_lateness_ms": 30000,
+      "replay_stable_share": 0.8475609756097561,
+      "original_drop_rate": 0.08216666666666667,
+      "diverged_rows": 125,
+      "rows_changed_by_ties": 6
+    },
+    {
+      "allowed_lateness_ms": 60000,
+      "replay_stable_share": 0.9,
+      "original_drop_rate": 0.017583333333333333,
+      "diverged_rows": 82,
+      "rows_changed_by_ties": 6
+    },
+    {
+      "allowed_lateness_ms": 120000,
+      "replay_stable_share": 0.9853658536585366,
+      "original_drop_rate": 0.00075,
+      "diverged_rows": 12,
+      "rows_changed_by_ties": 6
+    },
+    {
+      "allowed_lateness_ms": 300000,
+      "replay_stable_share": 0.9926829268292683,
+      "original_drop_rate": 0.0,
+      "diverged_rows": 6,
+      "rows_changed_by_ties": 6
+    }
+  ],
+  "by_jitter": [
+    {
+      "jitter_ms": 5000,
+      "replay_stable_share": 0.8914634146341464,
+      "original_drop_rate": 0.08291666666666667,
+      "diverged_rows": 89
+    },
+    {
+      "jitter_ms": 20000,
+      "replay_stable_share": 0.8902439024390244,
+      "original_drop_rate": 0.0785,
+      "diverged_rows": 90
+    },
+    {
+      "jitter_ms": 30000,
+      "replay_stable_share": 0.8939024390243903,
+      "original_drop_rate": 0.07908333333333334,
+      "diverged_rows": 87
+    },
+    {
+      "jitter_ms": 38000,
+      "replay_stable_share": 0.8475609756097561,
+      "original_drop_rate": 0.08216666666666667,
+      "diverged_rows": 125
+    },
+    {
+      "jitter_ms": 45000,
+      "replay_stable_share": 0.4902439024390244,
+      "original_drop_rate": 0.11583333333333333,
+      "diverged_rows": 418
+    },
+    {
+      "jitter_ms": 60000,
+      "replay_stable_share": 0.054878048780487805,
+      "original_drop_rate": 0.25525,
+      "diverged_rows": 775
+    }
+  ],
+  "best_lateness_ms": 300000,
+  "best_stable_share": 0.9926829268292683,
+  "worst_lateness_ms": 5000,
+  "worst_stable_share": 0.0024390243902439024,
+  "cliff_jitter_ms": 45000,
+  "stable_share_before_the_cliff": 0.8475609756097561,
+  "stable_share_at_the_cliff": 0.4902439024390244,
+  "shipped_jitter_ms": 38000,
+  "rows_the_most_generous_lateness_cannot_fix": 6,
+  "ties_the_most_generous_lateness_cannot_fix": 6
+}

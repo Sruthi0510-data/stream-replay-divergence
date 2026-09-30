@@ -35,6 +35,7 @@ remove them:
 from __future__ import annotations
 
 import random
+import zlib
 from dataclasses import dataclass, field
 
 from srd.events import LoggedEvent, ObservedEvent
@@ -104,6 +105,24 @@ class GeneratorConfig:
             raise ValueError(f"quiet keys not in key set: {', '.join(unknown)}")
 
 
+def _partition_of(key: str, offset: int, partitions: int) -> int:
+    """Assign a record to a partition, the way a producer's default partitioner would.
+
+    CRC32 rather than the built-in hash. Python randomises string hashing per
+    process unless PYTHONHASHSEED is pinned, so an earlier version placed the
+    same record in a different partition on every run, and the fixture, the
+    experiments and the README figures all quietly moved with it. It was caught
+    by a sweep reporting 0.9915 on one run and 0.9927 on the next with no code
+    between them, and the preflight now refuses a build whose results move under
+    a changed hash seed.
+
+    The offset is folded in modulo seven so that one key's records spread across
+    partitions, which is what a keyed partitioner does not do and what a
+    round-robin one does. Mixing the two is deliberate: real topics have both.
+    """
+    return zlib.crc32(f"{key}:{offset % 7}".encode("utf-8")) % partitions
+
+
 def _quiet_intervals(config: GeneratorConfig) -> tuple[tuple[int, int], ...]:
     """Event-time stretches during which the quiet keys emit nothing.
 
@@ -153,7 +172,7 @@ def generate(config: GeneratorConfig | None = None) -> tuple[ObservedEvent, ...]
 
     events: list[ObservedEvent] = []
     for offset, (stamp, key, payload) in enumerate(stamps):
-        partition = abs(hash((key, offset % 7))) % config.partitions
+        partition = _partition_of(key, offset, config.partitions)
         raw = stamp - config.clock_skew_ms if key in skewed else stamp
         emitted = (raw // config.stamp_resolution_ms) * config.stamp_resolution_ms
         delay = config.base_delay_ms + delay_rng.randrange(config.jitter_ms)

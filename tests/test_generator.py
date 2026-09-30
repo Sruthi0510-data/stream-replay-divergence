@@ -207,3 +207,27 @@ def test_the_original_run_produces_more_than_one_session_per_quiet_key(shipped):
     for row in result.sessions:
         per_key[row.key] = per_key.get(row.key, 0) + 1
     assert all(per_key[key] > 1 for key in GeneratorConfig().quiet_keys)
+
+
+def test_partition_assignment_does_not_move_with_the_hash_seed():
+    """The determinism bug that moved every published figure.
+
+    Python randomises string hashing per process. An earlier version used the
+    built-in hash to place records in partitions, so the fixture, the
+    experiments and the README figures all shifted from run to run. Asserting
+    the assignment against a fixed expectation catches a reintroduction, and the
+    preflight runs the whole suite under several seeds.
+    """
+    from srd.generator import _partition_of
+
+    assert [_partition_of("device-north", offset, 4) for offset in range(7)] == [
+        _partition_of("device-north", offset, 4) for offset in range(7)
+    ]
+    assert _partition_of("device-north", 0, 4) == 0
+    assert _partition_of("meter-01", 3, 4) == 3
+
+
+def test_one_key_spreads_across_every_partition(shipped):
+    """A keyed partitioner would not, a round-robin one would. Real topics have both."""
+    partitions = {event.partition for event in shipped if event.key == "device-north"}
+    assert len(partitions) > 1

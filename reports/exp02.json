@@ -1,0 +1,26 @@
+{
+  "contingent_records": 2633,
+  "contingent_share": 0.08776666666666667,
+  "contingent_keys": 1,
+  "contingent_key_names": [
+    "device-north"
+  ],
+  "reachable_rows": 73,
+  "reachable_share": 0.0922882427307206,
+  "reachable_span_minutes": 365,
+  "replay_batch_sizes": [
+    250,
+    1000,
+    5000,
+    20000,
+    30000
+  ],
+  "replay_pairs_compared": 10,
+  "replay_rows_that_differ": 308,
+  "replay_rows_outside_the_bound": 0,
+  "original_rows_that_differ": 323,
+  "original_rows_outside_the_bound": 250,
+  "bound_understates_by": 4.424657534246576,
+  "keys_the_bound_names": 1,
+  "keys_that_actually_differ": 12
+}
