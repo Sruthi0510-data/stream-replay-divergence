@@ -76,13 +76,19 @@ def main() -> int:
 
         metrics = json.loads(args.metrics.read_text())["metrics"] if args.metrics.exists() else {}
         rows = [
-            ("questions in the evaluation set", str(metrics.get("questions_total"))),
-            ("misses recall@k blames on retrieval", str(metrics.get("misses_total"))),
+            ("records in the shipped log", f"{metrics.get('records'):,}"),
             (
-                "of those, severed by the chunker",
-                f"{metrics.get('severed_share_of_misses_pct')} percent",
+                "output rows that survive a replay",
+                f"{metrics.get('replay_stable_pct')} percent",
             ),
-            ("hits whose answer is unrecoverable", str(metrics.get("false_hits"))),
+            (
+                "sessions before and after",
+                f"{metrics.get('original_sessions')} becomes {metrics.get('replay_sessions')}",
+            ),
+            (
+                "rows the computable bound misses",
+                str(metrics.get("original_rows_outside_the_bound")),
+            ),
             ("suite", f"{metrics.get('tests_total')} tests, "
                       f"{metrics.get('coverage_line_pct')} percent line and branch"),
         ]
