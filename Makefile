@@ -50,3 +50,8 @@ preflight:
 
 verify: cover experiments tables report check
 	@echo "verified"
+
+pdf:
+	PYTHONPATH=$(SRC) $(PY) tools/build_pdf.py docs/runbook.md \
+		--out dist/runbook.pdf --title "stream-replay-divergence" \
+		--subtitle "Runbook: somebody has said just reprocess from Kafka"
