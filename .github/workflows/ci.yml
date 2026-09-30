@@ -38,6 +38,7 @@ jobs:
           python tools/render_diagrams.py
           python tools/build_report.py
           python tools/capture_screenshots.py
+          python tools/proof_of_work.py
           python tools/verify_rendering.py
       # Generated text is committed, so regenerating it must be a no-op. The PNG
       # screenshots are deliberately outside this check: Chromium's raster output is
@@ -47,6 +48,7 @@ jobs:
         run: |
           python tools/render_tables.py
           python tools/render_diagrams.py
+          python tools/proof_of_work.py
           git diff --exit-code README.md 'docs/img/*.svg'
       - name: every published figure still matches the code
         run: python tools/check_numbers.py

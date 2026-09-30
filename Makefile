@@ -40,6 +40,7 @@ report:
 	PYTHONPATH=$(SRC) $(PY) tools/render_diagrams.py
 	PYTHONPATH=$(SRC) $(PY) tools/build_report.py
 	PYTHONPATH=$(SRC) $(PY) tools/capture_screenshots.py
+	PYTHONPATH=$(SRC) $(PY) tools/proof_of_work.py
 	PYTHONPATH=$(SRC) $(PY) tools/verify_rendering.py
 
 check:

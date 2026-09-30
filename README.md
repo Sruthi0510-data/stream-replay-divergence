@@ -281,6 +281,18 @@ batch and labelled it a live run. It printed one batch for a six-hour topic,
 which looked like a bug in the batcher rather than the category error it was.
 Now refused, with the reason.
 
+## Proof of work
+
+The transcript below was produced by running the commands, not by transcribing
+them. `tools/proof_of_work.py` executes each one in a subprocess, records the
+exit code, and fails the build when a command does not exit the way this README
+says it does. Elapsed times and absolute paths are normalised so the committed
+image does not change on every run; nothing else is touched, and the full
+untruncated output with a SHA-256 of each command's bytes is in
+`docs/proof-of-work.json`.
+
+![Captured terminal transcript of the suite and the command line](docs/img/proof-of-work.svg)
+
 ## How the numbers stay true
 
 Every figure in this document is produced by code that ran. `tools/collect_metrics.py`
@@ -294,7 +306,7 @@ quietly appear.
 The tables above are generated between committed marker comments and CI fails if
 regenerating them changes the file.
 
-393 tests, 100.0% line and 100.0% branch coverage, and the suite runs offline
+402 tests, 100.0% line and 100.0% branch coverage, and the suite runs offline
 from a fresh clone.
 
 ## The report

@@ -274,3 +274,93 @@ def test_the_screenshots_are_not_expected_to_be_byte_reproducible():
     workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     assert "docs/img/*.svg" in workflow
     assert "git diff --exit-code README.md docs/img\n" not in workflow
+
+
+def test_the_proof_of_work_transcript_covers_the_commands_the_readme_shows():
+    """A transcript that omits the interesting exit codes proves nothing."""
+    payload = json.loads((ROOT / "docs" / "proof-of-work.json").read_text())
+    codes = {capture["exit_code"] for capture in payload["captures"]}
+    assert {0, 2, 3} <= codes
+
+
+def test_every_captured_command_exited_as_expected():
+    payload = json.loads((ROOT / "docs" / "proof-of-work.json").read_text())
+    for capture in payload["captures"]:
+        assert capture["exit_code"] == capture["expected_exit_code"], capture["command"]
+
+
+def test_every_captured_command_carries_a_hash_of_its_untruncated_output():
+    payload = json.loads((ROOT / "docs" / "proof-of-work.json").read_text())
+    for capture in payload["captures"]:
+        assert len(capture["output_sha256"]) == 64
+
+
+def test_the_transcript_leaks_no_absolute_path():
+    svg = (ROOT / "docs" / "img" / "proof-of-work.svg").read_text(encoding="utf-8")
+    assert str(ROOT) not in svg
+    assert "/usr/bin/python" not in svg
+
+
+def test_the_transcript_does_not_normalise_payload_numbers():
+    """The duration rule was once wide enough to eat an event time of 10765000 ms."""
+    payload = json.loads((ROOT / "docs" / "proof-of-work.json").read_text())
+    witness = next(c for c in payload["captures"] if "witness" in c["command"])
+    assert "<elapsed>" not in witness["output"]
+    assert "ms" in witness["output"]
+
+
+def test_the_transcript_wraps_rather_than_clipping_a_long_line():
+    """SVG text does not wrap, so a long line silently loses its tail."""
+    import capture_terminal
+
+    wrapped = capture_terminal._wrap("x" * 300)
+    assert len(wrapped) > 1
+    assert all(len(row) <= capture_terminal.WRAP for row in wrapped)
+    assert "".join(row.lstrip() for row in wrapped) == "x" * 300
+
+
+def test_a_short_line_is_not_wrapped():
+    import capture_terminal
+
+    assert capture_terminal._wrap("short") == ["short"]
+
+
+def test_truncation_keeps_the_tail_when_asked():
+    """A coverage report's most interesting line is its last one."""
+    import capture_terminal
+
+    body = [f"line {index}" for index in range(40)]
+    rendered = capture_terminal.render(
+        [
+            {
+                "command": "demo",
+                "output": "\n".join(body),
+                "exit_code": 0,
+                "expected_exit_code": 0,
+                "max_lines": 8,
+                "tail_lines": 2,
+            }
+        ],
+        "demo",
+    )
+    assert "line 39" in rendered and "line 38" in rendered
+    assert "line 20" not in rendered
+
+
+def test_a_mismatched_exit_code_is_drawn_as_a_failure():
+    import capture_terminal
+
+    rendered = capture_terminal.render(
+        [
+            {
+                "command": "demo",
+                "output": "boom",
+                "exit_code": 1,
+                "expected_exit_code": 0,
+                "max_lines": 4,
+                "tail_lines": 0,
+            }
+        ],
+        "demo",
+    )
+    assert capture_terminal.BAD in rendered
