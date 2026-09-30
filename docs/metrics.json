@@ -165,7 +165,7 @@
     "slowdown_needed": 7.2,
     "stable_pct_under_four_lines": 79.6,
     "stable_rows": 508,
-    "tests_total": 391,
+    "tests_total": 393,
     "ties_floor": 8,
     "worst_lateness_pct": 0.1
   },

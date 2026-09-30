@@ -80,7 +80,7 @@ def test_clean_files_pass_the_attribution_check(repo):
 
 
 def test_an_em_dash_fails_the_ascii_check(repo):
-    repo({"a.md": "a sentence — with punctuation"})
+    repo({"a.md": "a sentence " + chr(0x2014) + " with punctuation"})
     problems: list[str] = []
     preflight.check_ascii(problems)
     assert problems and "non-ASCII" in problems[0]
@@ -139,3 +139,15 @@ def test_this_repository_imports_no_network_client():
     problems: list[str] = []
     preflight.check_offline(problems)
     assert problems == []
+
+
+def test_the_self_exclusion_names_exactly_the_two_files_that_need_it():
+    """The exclusion is two paths, not a glob, so nothing new slips under it."""
+    assert preflight.SELF == {"tools/preflight.py", "tests/test_preflight.py"}
+
+
+def test_a_file_outside_the_exclusion_is_still_scanned(repo):
+    repo({"tools/other.py": "# Generated with a helper\n"})
+    problems: list[str] = []
+    preflight.check_no_attribution_in_files(problems)
+    assert problems

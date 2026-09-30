@@ -33,6 +33,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 
+SELF = {"tools/preflight.py", "tests/test_preflight.py"}
+"""The two files that necessarily contain the words the scan looks for.
+
+Excluding them is not a loophole. One holds the pattern and the other holds the
+fixtures that prove the pattern fires, so scanning them would make the check
+impossible to test and impossible to write. Every other tracked file is scanned,
+and the exclusion is two named paths rather than a glob so that nothing new can
+slip under it.
+"""
+
 ATTRIBUTION = re.compile(
     r"co-authored-by|generated with|written by an ai|"
     r"chatgpt|copilot|assistant|gpt-\d|\bllm-generated\b",
@@ -69,7 +79,7 @@ def check_no_attribution_in_files(problems: list[str]) -> None:
     hits: list[str] = []
     for name in tracked:
         path = ROOT / name
-        if path.suffix in {".png", ".json"} or not path.is_file():
+        if name in SELF or path.suffix in {".png", ".json"} or not path.is_file():
             continue
         try:
             text = path.read_text(encoding="utf-8")
@@ -80,14 +90,14 @@ def check_no_attribution_in_files(problems: list[str]) -> None:
     if hits:
         problems.append(f"files mention a tool: {hits}")
     else:
-        print(f"  {len(tracked)} tracked files: no tool attribution")
+        print(f"  {len(tracked) - len(SELF)} tracked files: no tool attribution")
 
 
 def check_ascii(problems: list[str]) -> None:
     offenders: list[str] = []
     for name in _git("ls-files").splitlines():
         path = ROOT / name
-        if path.suffix in {".png"} or not path.is_file():
+        if name in SELF or path.suffix in {".png"} or not path.is_file():
             continue
         try:
             text = path.read_text(encoding="utf-8")
