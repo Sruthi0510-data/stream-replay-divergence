@@ -6,3 +6,5 @@ htmlcov/
 *.egg-info/
 build/
 dist/
+coverage.json
+junit.xml

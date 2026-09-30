@@ -260,3 +260,17 @@ def test_the_captured_badge_is_legible():
     manifest = json.loads((ROOT / "docs" / "img" / "manifest.json").read_text())
     badge = manifest["badge"]
     assert badge["visible"] and badge["colour"] != badge["background"]
+
+
+def test_the_screenshots_are_not_expected_to_be_byte_reproducible():
+    """A drift check on raster output would fail on antialiasing.
+
+    The SVGs are generated text and CI asserts they do not drift. The PNGs are
+    Chromium's raster output, which differs between machines and font stacks, so
+    they are committed as artefacts and excluded from the drift check. This test
+    exists so the exclusion is a documented decision rather than an oversight
+    somebody rediscovers by watching CI go red.
+    """
+    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    assert "docs/img/*.svg" in workflow
+    assert "git diff --exit-code README.md docs/img\n" not in workflow

@@ -39,11 +39,15 @@ jobs:
           python tools/build_report.py
           python tools/capture_screenshots.py
           python tools/verify_rendering.py
-      # Generated blocks are committed, so regenerating them must be a no-op.
-      - name: generated tables have not drifted
+      # Generated text is committed, so regenerating it must be a no-op. The PNG
+      # screenshots are deliberately outside this check: Chromium's raster output is
+      # not byte-reproducible across machines, and a drift check that fails on
+      # antialiasing teaches people to ignore drift checks.
+      - name: generated tables and diagrams have not drifted
         run: |
           python tools/render_tables.py
-          git diff --exit-code README.md docs/img
+          python tools/render_diagrams.py
+          git diff --exit-code README.md 'docs/img/*.svg'
       - name: every published figure still matches the code
         run: python tools/check_numbers.py
       - name: authorship and offline guarantees
