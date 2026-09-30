@@ -294,7 +294,7 @@ quietly appear.
 The tables above are generated between committed marker comments and CI fails if
 regenerating them changes the file.
 
-347 tests, 100.0% line and 100.0% branch coverage, and the suite runs offline
+390 tests, 100.0% line and 100.0% branch coverage, and the suite runs offline
 from a fresh clone.
 
 ## The report
