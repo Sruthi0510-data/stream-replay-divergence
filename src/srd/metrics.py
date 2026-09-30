@@ -11,9 +11,16 @@ the output table can no longer be rebuilt. A job can run with this counter at
 zero and still be unreplayable, because the session operator loses its output to
 a replay without dropping a single record.
 
-`srd_watermark_lag_ms` is the gauge that would have caught it. It is the distance
-between the watermark and the highest stamp the job has seen, and it grows
-whenever a partition falls behind. Alerting on it is alerting on the cause.
+`srd_partition_watermark_deficit_ms` is the gauge that would have caught it, and
+it is here in place of a plainer watermark-lag gauge that was tried first. Lag,
+defined as the highest stamp seen minus the watermark, is exactly the allowed
+lateness whenever the line has caught up, which under a fixed policy is almost
+always. It is constant by construction and a dashboard of it is a flat line.
+The deficit is the useful quantity: how far the global watermark's driver has
+run ahead of a given partition's own newest record. It is zero when every
+partition keeps pace, it crosses the allowed lateness exactly when that
+partition's fresh records start being discarded as late, and no engine exposes
+it.
 
 `srd_contingent_records_total` is the one no engine exposes, because no engine
 computes it. It is the count from the bounds module, and it is the number that
@@ -28,7 +35,9 @@ format is four lines of rules.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping, Sequence
+from typing import Iterable, Mapping, Sequence
+
+from srd.events import LoggedEvent
 
 __all__ = [
     "Metric",
@@ -38,6 +47,7 @@ __all__ = [
     "ALERTS",
     "render_exposition",
     "metric_names",
+    "partition_deficit_ms",
     "MetricError",
 ]
 
@@ -88,10 +98,10 @@ METRICS: tuple[Metric, ...] = (
         catches="Data loss in progress. Says nothing about whether the output is replayable.",
     ),
     Metric(
-        name="srd_watermark_lag_ms",
+        name="srd_partition_watermark_deficit_ms",
         kind=GAUGE,
-        help_text="Distance from the watermark to the highest event time seen.",
-        catches="A partition falling behind, before the drops start. The cause, not the symptom.",
+        help_text="How far the global watermark's driver leads the slowest partition's newest record.",
+        catches="A partition falling behind, before the drops start. Crosses the allowed lateness exactly when its fresh records begin to be discarded.",
     ),
     Metric(
         name="srd_batch_records",
@@ -133,11 +143,11 @@ class AlertRule:
 
 ALERTS: tuple[AlertRule, ...] = (
     AlertRule(
-        name="WatermarkLagGrowing",
-        expression="srd_watermark_lag_ms > 60000",
+        name="PartitionFallingBehind",
+        expression="srd_partition_watermark_deficit_ms > 30000",
         for_duration="10m",
-        summary="The watermark is more than a minute behind the newest record.",
-        does_not_mean="That records are being dropped yet. It means they are about to be.",
+        summary="A partition's newest record is further behind the watermark's driver than the allowed lateness.",
+        does_not_mean="That records are being dropped yet. It means the next one that arrives will be.",
     ),
     AlertRule(
         name="RecordsDropped",
@@ -184,3 +194,36 @@ def render_exposition(values: Mapping[str, float], *, metrics: Sequence[Metric] 
         rendered = str(int(value)) if float(value).is_integer() else f"{value:g}"
         lines.append(f"{metric.name} {rendered}")
     return "\n".join(lines) + "\n" if lines else ""
+
+
+def partition_deficit_ms(events: Iterable[LoggedEvent]) -> int:
+    """The largest gap between the global running maximum and a partition's own.
+
+    Computed from the log in offset order and nothing else, so it needs no
+    batching and no run. At each record the global watermark is driven by the
+    global running maximum, while the freshest thing that partition has produced
+    is its own running maximum; the difference is how much head start the line
+    has over that partition. When it exceeds the allowed lateness, that
+    partition's next record arrives already condemned.
+
+    Zero for a log with one partition, and zero under a per-partition policy,
+    which is the honest way to say that the whole failure mode is a consequence
+    of sharing one line across partitions that do not keep pace.
+
+    The comparison is against every partition seen so far, not against the
+    partition the current record belongs to. A first version measured only the
+    current one and reported 900 milliseconds on a log whose real deficit was
+    8,900, because a partition that has gone silent produces no records to
+    trigger a measurement, and going silent is exactly the condition this gauge
+    exists to catch.
+    """
+    global_max: int | None = None
+    per_partition: dict[int, int] = {}
+    worst = 0
+    for event in events:
+        per_partition[event.partition] = max(
+            per_partition.get(event.partition, event.event_time_ms), event.event_time_ms
+        )
+        global_max = event.event_time_ms if global_max is None else max(global_max, event.event_time_ms)
+        worst = max(worst, global_max - min(per_partition.values()))
+    return worst
