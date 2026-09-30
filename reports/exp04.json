@@ -1,0 +1,31 @@
+{
+  "partitions": 4,
+  "partition_deficit_ms": 44000,
+  "allowed_lateness_ms": 30000,
+  "rows": [
+    {
+      "per_partition": false,
+      "original_dropped": 2866,
+      "original_drop_rate": 0.09553333333333333,
+      "contingent_records": 2633,
+      "replay_stable_share": 0.6195121951219512,
+      "diverged_rows": 312
+    },
+    {
+      "per_partition": true,
+      "original_dropped": 2365,
+      "original_drop_rate": 0.07883333333333334,
+      "contingent_records": 2603,
+      "replay_stable_share": 0.7963414634146342,
+      "diverged_rows": 167
+    }
+  ],
+  "dropped_under_one_line": 2866,
+  "dropped_under_four_lines": 2365,
+  "drops_the_boolean_causes": 501,
+  "contingent_under_one_line": 2633,
+  "contingent_under_four_lines": 2603,
+  "stable_share_under_one_line": 0.6195121951219512,
+  "stable_share_under_four_lines": 0.7963414634146342,
+  "diverged_rows_the_boolean_causes": 145
+}
