@@ -21,7 +21,7 @@ allowed_lateness_ms = {lateness}
 per_partition = false
 
 [runtime]
-trigger_interval_ms = 50
+trigger_interval_ms = 600000
 replay_batch_records = 1
 """
 

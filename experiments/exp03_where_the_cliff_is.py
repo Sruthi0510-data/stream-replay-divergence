@@ -101,6 +101,6 @@ def main() -> dict[str, object]:
 
 if __name__ == "__main__":
     payload = main()
-    (ROOT / "reports").mkdir(exist_ok=True)
-    (ROOT / "reports" / "exp03.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    (ROOT / "docs" / "experiments").mkdir(parents=True, exist_ok=True)
+    (ROOT / "docs" / "experiments" / "exp03.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(payload, indent=2))

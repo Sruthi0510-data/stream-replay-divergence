@@ -1,0 +1,269 @@
+{
+  "anchors": {
+    "allowed_lateness_s": [
+      "allowed lateness of {} seconds"
+    ],
+    "best_lateness_pct": [
+      "reaches {}%"
+    ],
+    "bound_understates_by": [
+      "understates it by {}"
+    ],
+    "cliff_jitter_s": [
+      "at {} seconds of spread"
+    ],
+    "contingent_keys": [
+      "names {} device"
+    ],
+    "contingent_pct": [
+      "{}% of the log"
+    ],
+    "contingent_records": [
+      "{} records are contingent"
+    ],
+    "coverage_branch_pct": [
+      "{}% branch"
+    ],
+    "coverage_line_pct": [
+      "{}% line"
+    ],
+    "diverged_rows": [
+      "{} rows differ"
+    ],
+    "drops_the_boolean_causes": [
+      "costs {} records"
+    ],
+    "keys_that_differ": [
+      "all {} devices"
+    ],
+    "most_sessions_recovered": [
+      "best of them recovers {}"
+    ],
+    "original_rows": [
+      "table holds {} rows",
+      "{} rows the original"
+    ],
+    "original_rows_outside_the_bound": [
+      "{} of the rows that differ"
+    ],
+    "original_sessions": [
+      "emitted {} sessions"
+    ],
+    "partition_deficit_s": [
+      "{} seconds behind"
+    ],
+    "reachable_pct": [
+      "{}% of the table"
+    ],
+    "reachable_rows": [
+      "{} rows can differ"
+    ],
+    "reachable_span_minutes": [
+      "{} minutes of event"
+    ],
+    "records": [
+      "log holds {} records"
+    ],
+    "replay_dropped": [
+      "discards {} records"
+    ],
+    "replay_pairs": [
+      "{} pairs of replays"
+    ],
+    "replay_rows": [
+      "produces {} rows"
+    ],
+    "replay_rows_outside_the_bound": [
+      "{} rows fall outside"
+    ],
+    "replay_sessions": [
+      "become {} sessions"
+    ],
+    "replay_stable_pct": [
+      "{}% of the rows"
+    ],
+    "rows_changed_by_drops": [
+      "{} of them because"
+    ],
+    "rows_changed_by_ties": [
+      "{} differ only in"
+    ],
+    "rows_only_in_original": [
+      "loses {} rows"
+    ],
+    "rows_only_in_replay": [
+      "invents {} rows"
+    ],
+    "session_loss_pct": [
+      "{}% of the session"
+    ],
+    "settings_tried": [
+      "{} combinations"
+    ],
+    "slowdown_needed": [
+      "{} times slower"
+    ],
+    "stable_pct_under_four_lines": [
+      "to {}% and no further"
+    ],
+    "stable_rows": [
+      "{} of them are identical"
+    ],
+    "tests_total": [
+      "{} tests,"
+    ],
+    "ties_floor": [
+      "floor of {} rows"
+    ],
+    "worst_lateness_pct": [
+      "falls to {}%"
+    ]
+  },
+  "checked_documents": [
+    "README.md",
+    "docs/runbook.md",
+    "docs/adr/ADR-001-the-log-is-not-the-run.md",
+    "docs/adr/ADR-002-the-watermark-is-evaluated-a-batch-behind.md",
+    "docs/adr/ADR-003-three-arms-and-no-more.md",
+    "docs/adr/ADR-004-processing-time-timers-are-not-replayable.md",
+    "docs/adr/ADR-005-what-this-repository-cannot-measure.md"
+  ],
+  "metrics": {
+    "allowed_lateness_s": 30,
+    "best_lateness_pct": 99.0,
+    "bound_understates_by": 4.3,
+    "cliff_jitter_s": 45,
+    "contingent_keys": 1,
+    "contingent_pct": 8.8,
+    "contingent_records": 2633,
+    "coverage_branch_pct": 100.0,
+    "coverage_line_pct": 100.0,
+    "diverged_rows": 312,
+    "drops_the_boolean_causes": 501,
+    "keys_that_differ": 12,
+    "most_sessions_recovered": 21,
+    "original_rows": 787,
+    "original_rows_outside_the_bound": 239,
+    "original_sessions": 205,
+    "partition_deficit_s": 44,
+    "reachable_pct": 9.3,
+    "reachable_rows": 73,
+    "reachable_span_minutes": 365,
+    "records": 30000,
+    "replay_dropped": 8,
+    "replay_pairs": 10,
+    "replay_rows": 820,
+    "replay_rows_outside_the_bound": 0,
+    "replay_sessions": 12,
+    "replay_stable_pct": 62.0,
+    "rows_changed_by_drops": 270,
+    "rows_changed_by_ties": 9,
+    "rows_only_in_original": 0,
+    "rows_only_in_replay": 33,
+    "session_loss_pct": 94.1,
+    "settings_tried": 30,
+    "slowdown_needed": 7.2,
+    "stable_pct_under_four_lines": 79.6,
+    "stable_rows": 508,
+    "tests_total": 347,
+    "ties_floor": 8,
+    "worst_lateness_pct": 0.1
+  },
+  "note": "every value here is produced by running the suite and the experiments; tools/check_numbers.py fails the build when a document quotes a figure the code no longer produces",
+  "table_values": [
+    508,
+    270,
+    9,
+    33,
+    0,
+    5,
+    "48.7",
+    "0.1",
+    819,
+    0,
+    15,
+    "26.3",
+    "5.7",
+    773,
+    1,
+    30,
+    "8.1",
+    "85.1",
+    122,
+    8,
+    60,
+    "1.6",
+    "90.9",
+    75,
+    8,
+    120,
+    "0.0",
+    "98.7",
+    11,
+    8,
+    300,
+    "0.0",
+    "99.0",
+    8,
+    8,
+    5,
+    "8.2",
+    "89.5",
+    20,
+    "7.9",
+    "89.4",
+    30,
+    "7.9",
+    "89.6",
+    38,
+    "8.1",
+    "85.1",
+    45,
+    "11.4",
+    "49.6",
+    60,
+    "25.6",
+    "5.4",
+    1,
+    10,
+    100,
+    1000,
+    10000,
+    100,
+    12,
+    12,
+    12,
+    12,
+    21,
+    500,
+    12,
+    12,
+    12,
+    12,
+    12,
+    2000,
+    12,
+    12,
+    12,
+    12,
+    12,
+    5000,
+    12,
+    12,
+    12,
+    12,
+    12,
+    15000,
+    12,
+    12,
+    12,
+    12,
+    12,
+    30000,
+    12,
+    12,
+    12,
+    12,
+    12
+  ]
+}

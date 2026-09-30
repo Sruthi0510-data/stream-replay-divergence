@@ -19,6 +19,9 @@ ROOT = Path(__file__).resolve().parents[1]
 EXPERIMENTS = sorted((ROOT / "experiments").glob("exp*.py"))
 
 
+_RESULTS: dict[str, dict] = {}
+
+
 def load(path: Path):
     spec = importlib.util.spec_from_file_location(path.stem, path)
     module = importlib.util.module_from_spec(spec)
@@ -27,13 +30,26 @@ def load(path: Path):
     return module
 
 
+def result(path: Path) -> dict:
+    """Run an experiment once per suite and hand the same payload to every test.
+
+    Without the cache the five experiments ran fifteen times between them and
+    the suite spent most of its wall clock regenerating fixtures it had already
+    built. The experiments are pure functions of the committed fixture, so one
+    run is as good as three.
+    """
+    if path.stem not in _RESULTS:
+        _RESULTS[path.stem] = load(path).main()
+    return _RESULTS[path.stem]
+
+
 def test_there_are_five_experiments():
     assert len(EXPERIMENTS) == 5
 
 
 @pytest.mark.parametrize("path", EXPERIMENTS, ids=lambda path: path.stem)
 def test_an_experiment_runs_and_returns_a_mapping(path: Path):
-    payload = load(path).main()
+    payload = result(path)
     assert isinstance(payload, dict) and payload
 
 
@@ -41,11 +57,11 @@ def test_an_experiment_runs_and_returns_a_mapping(path: Path):
 def test_an_experiment_returns_only_json_safe_values(path: Path):
     import json
 
-    json.dumps(load(path).main())
+    json.dumps(result(path))
 
 
 def test_the_headline_experiment_reports_every_field_the_readme_quotes():
-    payload = load(ROOT / "experiments" / "exp01_the_table_cannot_be_rebuilt.py").main()
+    payload = result(ROOT / "experiments" / "exp01_the_table_cannot_be_rebuilt.py")
     for field in (
         "replay_stable_share",
         "rows_changed_by_drops",
@@ -64,25 +80,23 @@ def test_the_replay_loses_no_row_it_had(make_logged):
     Reprocessing does not lose rows. It adds them, and rewrites the ones it
     keeps, which is a harder failure to notice than losing them would be.
     """
-    payload = load(ROOT / "experiments" / "exp01_the_table_cannot_be_rebuilt.py").main()
+    payload = result(ROOT / "experiments" / "exp01_the_table_cannot_be_rebuilt.py")
     assert payload["rows_only_in_original"] == 0
     assert payload["replay_rows"] > payload["original_rows"]
 
 
 def test_the_bound_holds_across_every_replay_pair():
-    payload = load(ROOT / "experiments" / "exp02_the_bound_and_the_gap.py").main()
+    payload = result(ROOT / "experiments" / "exp02_the_bound_and_the_gap.py")
     assert payload["replay_rows_outside_the_bound"] == 0
     assert payload["replay_pairs_compared"] == 10
 
 
 def test_the_bound_does_not_hold_against_the_original():
-    payload = load(ROOT / "experiments" / "exp02_the_bound_and_the_gap.py").main()
+    payload = result(ROOT / "experiments" / "exp02_the_bound_and_the_gap.py")
     assert payload["original_rows_outside_the_bound"] > 0
 
 
 def test_no_replay_setting_reproduces_the_session_table():
-    payload = load(
-        ROOT / "experiments" / "exp05_no_batch_size_brings_the_sessions_back.py"
-    ).main()
+    payload = result(ROOT / "experiments" / "exp05_no_batch_size_brings_the_sessions_back.py")
     assert payload["settings_that_reproduce_the_table"] == 0
     assert payload["settings_tried"] == 30

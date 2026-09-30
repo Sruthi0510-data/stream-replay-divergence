@@ -245,13 +245,19 @@ def test_a_rewrite_window_is_frozen():
         window.span_ms = 5
 
 
+_SHIPPED: list = []
+
+
 def _shipped_runs():
     """The shipped fixture, one original run and several replays.
 
     Built here rather than in a fixture because only two tests need it and both
     of them are about the same discovery, so keeping the construction next to
-    them saves a reader a trip to conftest.
+    them saves a reader a trip to conftest. Memoised because building it twice
+    costs more than the two tests together.
     """
+    if _SHIPPED:
+        return _SHIPPED[0]
     from srd.batching import ThroughputBatcher, WallClockBatcher, as_observed
     from srd.compare import compare as compare_runs
     from srd.generator import generate
@@ -272,7 +278,8 @@ def _shipped_runs():
     ]
     report = classify(EventLog(tuple(logged)), config.watermark)
     window = rewrite_window(report, window_ms=config.window_ms, emitted_rows=len(original.windows))
-    return original, replays, window, compare_runs
+    _SHIPPED.append((original, replays, window, compare_runs))
+    return _SHIPPED[0]
 
 
 def test_the_window_bounds_what_two_replays_can_disagree_about():

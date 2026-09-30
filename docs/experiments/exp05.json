@@ -1,0 +1,230 @@
+{
+  "target_sessions": 205,
+  "settings_tried": 30,
+  "settings_that_reproduce_the_table": 0,
+  "most_sessions_any_setting_produced": 21,
+  "setting_that_came_closest": {
+    "batch_records": 100,
+    "per_batch_ms": 10000
+  },
+  "wall_clock_the_closest_setting_spent_ms": 3000000,
+  "event_time_span_of_the_log_ms": 21643000,
+  "slowdown_needed_to_match_the_original": 7.214333333333333,
+  "largest_drop_count_across_the_sweep": 481,
+  "smallest_drop_count_across_the_sweep": 0,
+  "dropped_at_the_shipped_setting": 8,
+  "dropped_share_at_the_shipped_setting": 0.0002666666666666667,
+  "sessions_at_the_shipped_setting": 12,
+  "grid": [
+    {
+      "batch_records": 100,
+      "per_batch_ms": 1,
+      "sessions": 12,
+      "dropped": 481,
+      "wall_clock_span_ms": 300
+    },
+    {
+      "batch_records": 100,
+      "per_batch_ms": 10,
+      "sessions": 12,
+      "dropped": 481,
+      "wall_clock_span_ms": 3000
+    },
+    {
+      "batch_records": 100,
+      "per_batch_ms": 100,
+      "sessions": 12,
+      "dropped": 481,
+      "wall_clock_span_ms": 30000
+    },
+    {
+      "batch_records": 100,
+      "per_batch_ms": 1000,
+      "sessions": 12,
+      "dropped": 481,
+      "wall_clock_span_ms": 300000
+    },
+    {
+      "batch_records": 100,
+      "per_batch_ms": 10000,
+      "sessions": 21,
+      "dropped": 481,
+      "wall_clock_span_ms": 3000000
+    },
+    {
+      "batch_records": 500,
+      "per_batch_ms": 1,
+      "sessions": 12,
+      "dropped": 94,
+      "wall_clock_span_ms": 60
+    },
+    {
+      "batch_records": 500,
+      "per_batch_ms": 10,
+      "sessions": 12,
+      "dropped": 94,
+      "wall_clock_span_ms": 600
+    },
+    {
+      "batch_records": 500,
+      "per_batch_ms": 100,
+      "sessions": 12,
+      "dropped": 94,
+      "wall_clock_span_ms": 6000
+    },
+    {
+      "batch_records": 500,
+      "per_batch_ms": 1000,
+      "sessions": 12,
+      "dropped": 94,
+      "wall_clock_span_ms": 60000
+    },
+    {
+      "batch_records": 500,
+      "per_batch_ms": 10000,
+      "sessions": 12,
+      "dropped": 94,
+      "wall_clock_span_ms": 600000
+    },
+    {
+      "batch_records": 2000,
+      "per_batch_ms": 1,
+      "sessions": 12,
+      "dropped": 22,
+      "wall_clock_span_ms": 15
+    },
+    {
+      "batch_records": 2000,
+      "per_batch_ms": 10,
+      "sessions": 12,
+      "dropped": 22,
+      "wall_clock_span_ms": 150
+    },
+    {
+      "batch_records": 2000,
+      "per_batch_ms": 100,
+      "sessions": 12,
+      "dropped": 22,
+      "wall_clock_span_ms": 1500
+    },
+    {
+      "batch_records": 2000,
+      "per_batch_ms": 1000,
+      "sessions": 12,
+      "dropped": 22,
+      "wall_clock_span_ms": 15000
+    },
+    {
+      "batch_records": 2000,
+      "per_batch_ms": 10000,
+      "sessions": 12,
+      "dropped": 22,
+      "wall_clock_span_ms": 150000
+    },
+    {
+      "batch_records": 5000,
+      "per_batch_ms": 1,
+      "sessions": 12,
+      "dropped": 8,
+      "wall_clock_span_ms": 6
+    },
+    {
+      "batch_records": 5000,
+      "per_batch_ms": 10,
+      "sessions": 12,
+      "dropped": 8,
+      "wall_clock_span_ms": 60
+    },
+    {
+      "batch_records": 5000,
+      "per_batch_ms": 100,
+      "sessions": 12,
+      "dropped": 8,
+      "wall_clock_span_ms": 600
+    },
+    {
+      "batch_records": 5000,
+      "per_batch_ms": 1000,
+      "sessions": 12,
+      "dropped": 8,
+      "wall_clock_span_ms": 6000
+    },
+    {
+      "batch_records": 5000,
+      "per_batch_ms": 10000,
+      "sessions": 12,
+      "dropped": 8,
+      "wall_clock_span_ms": 60000
+    },
+    {
+      "batch_records": 15000,
+      "per_batch_ms": 1,
+      "sessions": 12,
+      "dropped": 2,
+      "wall_clock_span_ms": 2
+    },
+    {
+      "batch_records": 15000,
+      "per_batch_ms": 10,
+      "sessions": 12,
+      "dropped": 2,
+      "wall_clock_span_ms": 20
+    },
+    {
+      "batch_records": 15000,
+      "per_batch_ms": 100,
+      "sessions": 12,
+      "dropped": 2,
+      "wall_clock_span_ms": 200
+    },
+    {
+      "batch_records": 15000,
+      "per_batch_ms": 1000,
+      "sessions": 12,
+      "dropped": 2,
+      "wall_clock_span_ms": 2000
+    },
+    {
+      "batch_records": 15000,
+      "per_batch_ms": 10000,
+      "sessions": 12,
+      "dropped": 2,
+      "wall_clock_span_ms": 20000
+    },
+    {
+      "batch_records": 30000,
+      "per_batch_ms": 1,
+      "sessions": 12,
+      "dropped": 0,
+      "wall_clock_span_ms": 1
+    },
+    {
+      "batch_records": 30000,
+      "per_batch_ms": 10,
+      "sessions": 12,
+      "dropped": 0,
+      "wall_clock_span_ms": 10
+    },
+    {
+      "batch_records": 30000,
+      "per_batch_ms": 100,
+      "sessions": 12,
+      "dropped": 0,
+      "wall_clock_span_ms": 100
+    },
+    {
+      "batch_records": 30000,
+      "per_batch_ms": 1000,
+      "sessions": 12,
+      "dropped": 0,
+      "wall_clock_span_ms": 1000
+    },
+    {
+      "batch_records": 30000,
+      "per_batch_ms": 10000,
+      "sessions": 12,
+      "dropped": 0,
+      "wall_clock_span_ms": 10000
+    }
+  ]
+}
