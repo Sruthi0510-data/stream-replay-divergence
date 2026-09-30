@@ -32,9 +32,9 @@ REPORT = ROOT / "docs" / "report.html"
 OUT = ROOT / "docs" / "img"
 
 SHOTS = [
-    ("report-summary", "summary", "transitions"),
-    ("report-transitions", "transitions", "tests"),
-    ("report-tests", "tests", None),
+    ("report-summary", "summary", "bound"),
+    ("report-bound", "bound", "sessions"),
+    ("report-settings", "settings", None),
 ]
 
 
@@ -43,7 +43,7 @@ def ensure_report() -> None:
         return
     print("report missing, building it")
     subprocess.run(
-        [sys.executable, "-m", "lac.cli", "report", "--out", str(REPORT)],
+        [sys.executable, str(Path(__file__).resolve().parent / "build_report.py")],
         cwd=ROOT,
         check=False,
     )
@@ -73,7 +73,7 @@ def main() -> int:
 
         badge = page.evaluate(
             """() => {
-              const el = document.querySelector('.verdict-finding, .verdict-clear');
+              const el = document.querySelector('.verdict');
               if (!el) return null;
               const s = getComputedStyle(el);
               return {colour: s.color, background: s.backgroundColor,

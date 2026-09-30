@@ -168,3 +168,95 @@ def test_regenerating_the_tables_does_not_change_the_readme():
 
 def test_every_table_value_is_published_for_the_backward_pass():
     assert len(render_tables.table_values()) > 40
+
+
+def test_the_diagrams_are_valid_xml():
+    import xml.etree.ElementTree as ET
+
+    for path in sorted((ROOT / "docs" / "img").glob("*.svg")):
+        ET.parse(path)
+
+
+def test_every_diagram_carries_a_title_and_a_description():
+    """A diagram without either is unreadable to anyone using a screen reader."""
+    import xml.etree.ElementTree as ET
+
+    namespace = "{http://www.w3.org/2000/svg}"
+    for path in sorted((ROOT / "docs" / "img").glob("*.svg")):
+        root = ET.parse(path).getroot()
+        assert root.find(f"{namespace}title") is not None, path.name
+        assert root.find(f"{namespace}desc") is not None, path.name
+
+
+def test_every_text_element_in_a_diagram_sets_its_own_colour():
+    """Inherited colour renders as black text on a dark theme."""
+    import xml.etree.ElementTree as ET
+
+    namespace = "{http://www.w3.org/2000/svg}"
+    for path in sorted((ROOT / "docs" / "img").glob("*.svg")):
+        for element in ET.parse(path).getroot().iter(f"{namespace}text"):
+            assert element.get("fill"), f"{path.name}: {element.text}"
+
+
+def test_regenerating_the_diagrams_does_not_change_them():
+    import render_diagrams
+
+    before = {
+        path.name: path.read_text(encoding="utf-8")
+        for path in sorted((ROOT / "docs" / "img").glob("*.svg"))
+    }
+    assert render_diagrams.main() == 0
+    after = {
+        path.name: path.read_text(encoding="utf-8")
+        for path in sorted((ROOT / "docs" / "img").glob("*.svg"))
+    }
+    assert before == after
+
+
+def test_the_diagram_numbers_come_from_the_metrics_file():
+    """A hand-typed number in a diagram is a number nothing re-measures."""
+    import render_diagrams
+
+    metrics = json.loads((ROOT / "docs" / "metrics.json").read_text())["metrics"]
+    svg = render_diagrams.where_the_rows_went(metrics)
+    assert f">{metrics['stable_rows']}<" in svg
+    assert f">{metrics['rows_changed_by_drops']}<" in svg
+
+
+def test_the_report_builds_and_names_its_sections():
+    import build_report
+
+    assert build_report.main() == 0
+    text = (ROOT / "docs" / "report.html").read_text(encoding="utf-8")
+    for section in ("summary", "arms", "bound", "sessions", "settings"):
+        assert f'id="{section}"' in text
+
+
+def test_the_report_carries_a_verdict_badge():
+    text = (ROOT / "docs" / "report.html").read_text(encoding="utf-8")
+    assert 'class="verdict"' in text
+
+
+def test_the_report_draws_no_bar_for_a_zero_row():
+    """The one row on the page whose point is that it is empty."""
+    text = (ROOT / "docs" / "report.html").read_text(encoding="utf-8")
+    assert "width:0px" not in text
+    assert text.count('class="bar"') == 4
+
+
+def test_the_report_needs_no_network():
+    text = (ROOT / "docs" / "report.html").read_text(encoding="utf-8")
+    for scheme in ("http://", "https://", "//cdn"):
+        assert scheme not in text
+
+
+def test_the_screenshot_manifest_records_how_each_shot_was_framed():
+    manifest = json.loads((ROOT / "docs" / "img" / "manifest.json").read_text())
+    assert len(manifest["shots"]) == 3
+    assert all(shot["framed_from"] for shot in manifest["shots"])
+
+
+def test_the_captured_badge_is_legible():
+    manifest = json.loads((ROOT / "docs" / "img" / "manifest.json").read_text())
+    badge = manifest["badge"]
+    assert badge["visible"] and badge["colour"] != badge["background"]

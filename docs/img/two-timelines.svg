@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 340" width="860" height="340" role="img" aria-labelledby="title desc">
+<title id="title">The same records under two trigger schedules</title>
+<desc id="desc">A late record is discarded when it falls into the trigger after the one that raised the watermark, and kept when the two share a trigger.</desc>
+<rect width="860" height="340" fill="#fcfcfb"/>
+<text x="24.0" y="34.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#1d1d1b" text-anchor="start">The same bytes, two trigger schedules</text>
+<text x="24.0" y="58.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#6b6b66" text-anchor="start">Record B carries an event time far below record A. Nothing about B changes between the two rows.</text>
+<text x="24.0" y="104.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#1d1d1b" text-anchor="start">live run: a trigger every ten seconds</text>
+<rect x="24" y="130" width="124" height="46" rx="6" fill="none" stroke="#d9d9d4" stroke-width="1.5"/>
+<text x="86.0" y="192.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6b6b66" text-anchor="middle">trigger 0</text>
+<rect x="156" y="130" width="124" height="46" rx="6" fill="none" stroke="#d9d9d4" stroke-width="1.5"/>
+<text x="218.0" y="192.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6b6b66" text-anchor="middle">trigger 1</text>
+<rect x="288" y="130" width="124" height="46" rx="6" fill="none" stroke="#d9d9d4" stroke-width="1.5"/>
+<text x="350.0" y="192.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6b6b66" text-anchor="middle">trigger 2</text>
+<rect x="420" y="130" width="124" height="46" rx="6" fill="none" stroke="#d9d9d4" stroke-width="1.5"/>
+<text x="482.0" y="192.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6b6b66" text-anchor="middle">trigger 3</text>
+<rect x="552" y="130" width="124" height="46" rx="6" fill="none" stroke="#d9d9d4" stroke-width="1.5"/>
+<text x="614.0" y="192.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6b6b66" text-anchor="middle">trigger 4</text>
+<rect x="684" y="130" width="124" height="46" rx="6" fill="none" stroke="#d9d9d4" stroke-width="1.5"/>
+<text x="746.0" y="192.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6b6b66" text-anchor="middle">trigger 5</text>
+<rect x="156" y="140" width="36" height="26" rx="4" fill="#2a78d6"/>
+<text x="174.0" y="158.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#fcfcfb" text-anchor="middle">A</text>
+<rect x="288" y="140" width="36" height="26" rx="4" fill="#eb6834"/>
+<text x="306.0" y="158.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#fcfcfb" text-anchor="middle">B</text>
+<text x="340.0" y="158.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#eb6834" text-anchor="start">B meets the watermark A raised, and is discarded</text>
+<text x="24.0" y="236.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#1d1d1b" text-anchor="start">replay: one trigger per five thousand records</text>
+<rect x="24" y="262" width="520" height="46" rx="6" fill="none" stroke="#d9d9d4" stroke-width="1.5"/>
+<text x="284.0" y="324.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6b6b66" text-anchor="middle">trigger 0</text>
+<rect x="48" y="272" width="36" height="26" rx="4" fill="#2a78d6"/>
+<text x="66.0" y="290.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#fcfcfb" text-anchor="middle">A</text>
+<rect x="100" y="272" width="36" height="26" rx="4" fill="#1baf7a"/>
+<text x="118.0" y="290.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#fcfcfb" text-anchor="middle">B</text>
+<text x="584.0" y="290.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1baf7a" text-anchor="start">B shares A's trigger, and survives</text>
+</svg>

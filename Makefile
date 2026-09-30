@@ -1,4 +1,4 @@
-.PHONY: help test cover fixtures experiments tables report verify clean
+.PHONY: help test cover fixtures experiments tables report check preflight verify clean
 
 PY ?= python3
 SRC := src
@@ -10,6 +10,8 @@ help:
 	@echo "experiments run every experiment, writing JSON under reports/"
 	@echo "tables      regenerate the generated blocks in the README"
 	@echo "report      build the HTML report and the diagrams"
+	@echo "check       fail if a document quotes a figure the code no longer produces"
+	@echo "preflight   authorship, ascii, exit codes, determinism and offline checks"
 	@echo "verify      everything, in the order CI runs it"
 
 test:
@@ -37,9 +39,14 @@ tables:
 report:
 	PYTHONPATH=$(SRC) $(PY) tools/render_diagrams.py
 	PYTHONPATH=$(SRC) $(PY) tools/build_report.py
+	PYTHONPATH=$(SRC) $(PY) tools/capture_screenshots.py
+	PYTHONPATH=$(SRC) $(PY) tools/verify_rendering.py
 
 check:
 	PYTHONPATH=$(SRC) $(PY) tools/check_numbers.py
 
-verify: cover experiments tables check
+preflight:
+	PYTHONPATH=$(SRC) $(PY) tools/preflight.py
+
+verify: cover experiments tables report check
 	@echo "verified"

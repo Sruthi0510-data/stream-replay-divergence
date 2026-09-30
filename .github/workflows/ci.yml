@@ -1,0 +1,50 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          python -m playwright install --with-deps chromium
+      - name: suite with branch coverage
+        run: |
+          python -m pytest -q --cov=srd --cov-branch \
+            --cov-report=json:coverage.json --junitxml=junit.xml \
+            --cov-report=term-missing --cov-fail-under=100
+      # The suite is deterministic or it is not a suite. Python randomises string
+      # hashing per process, and an earlier version of the generator leaked that
+      # randomness into every published figure.
+      - name: determinism under a changed hash seed
+        run: |
+          for seed in 1 7 4096; do
+            PYTHONHASHSEED=$seed python -m pytest -q
+          done
+      - name: experiments and metrics
+        run: python tools/collect_metrics.py --skip-tests
+      - name: diagrams and report
+        run: |
+          python tools/render_diagrams.py
+          python tools/build_report.py
+          python tools/capture_screenshots.py
+          python tools/verify_rendering.py
+      # Generated blocks are committed, so regenerating them must be a no-op.
+      - name: generated tables have not drifted
+        run: |
+          python tools/render_tables.py
+          git diff --exit-code README.md docs/img
+      - name: every published figure still matches the code
+        run: python tools/check_numbers.py
+      - name: authorship and offline guarantees
+        run: python tools/preflight.py

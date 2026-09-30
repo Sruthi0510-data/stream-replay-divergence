@@ -9,6 +9,15 @@ description = "Measures which part of a stateful streaming job's output survives
 requires-python = ">=3.11"
 dependencies = []
 
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "pytest-cov>=5",
+  "coverage>=7",
+  "playwright>=1.40",
+  "cmarkgfm>=2024.1.14",
+]
+
 [project.scripts]
 srd = "srd.cli:main"
 

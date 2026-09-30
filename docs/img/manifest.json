@@ -1,0 +1,32 @@
+{
+  "shots": [
+    {
+      "image": "docs/img/report-summary.png",
+      "source": "docs/report.html",
+      "framed_from": "summary",
+      "framed_to": "bound",
+      "height_px": 688
+    },
+    {
+      "image": "docs/img/report-bound.png",
+      "source": "docs/report.html",
+      "framed_from": "bound",
+      "framed_to": "sessions",
+      "height_px": 320
+    },
+    {
+      "image": "docs/img/report-settings.png",
+      "source": "docs/report.html",
+      "framed_from": "settings",
+      "framed_to": null,
+      "height_px": 524
+    }
+  ],
+  "badge": {
+    "colour": "rgb(255, 255, 255)",
+    "background": "rgb(235, 104, 52)",
+    "text": "no: the replay does not reproduce the table",
+    "visible": true
+  },
+  "note": "captured from the report the tool generates, framed by heading id, with the verdict badge contrast read back from the rendered page"
+}
