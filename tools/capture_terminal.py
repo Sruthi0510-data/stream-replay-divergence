@@ -18,6 +18,10 @@ drift checks. The durations are real; they are simply not stable.
 Absolute paths are replaced with a repository-relative form, because the path a
 build happened to run under is not evidence of anything and leaks the machine.
 
+How long each command took is not recorded. It is the only genuinely unstable
+thing about a run, it is evidence of nothing, and keeping it left the committed
+sidecar dirty after every build.
+
 Long output is truncated to a line budget per command, with the number of
 omitted lines stated in place. The full output is written to a JSON sidecar
 alongside the image, with a SHA-256 of the untruncated bytes, so the picture is
@@ -32,7 +36,6 @@ import os
 import re
 import subprocess
 import sys
-import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
@@ -110,7 +113,6 @@ def _display(argv: Sequence[str]) -> str:
 
 
 def run(step: Step, env: dict[str, str]) -> dict[str, object]:
-    started = time.monotonic()
     result = subprocess.run(
         list(step.argv),
         cwd=ROOT,
@@ -118,7 +120,6 @@ def run(step: Step, env: dict[str, str]) -> dict[str, object]:
         text=True,
         env=env,
     )
-    elapsed = time.monotonic() - started
     raw = (result.stdout + result.stderr).rstrip("\n")
     return {
         "label": step.label,
@@ -130,7 +131,6 @@ def run(step: Step, env: dict[str, str]) -> dict[str, object]:
         "output": _normalise(raw),
         "max_lines": step.max_lines,
         "tail_lines": step.tail_lines,
-        "seconds": round(elapsed, 2),
     }
 
 

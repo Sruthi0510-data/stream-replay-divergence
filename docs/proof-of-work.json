@@ -10,8 +10,7 @@
       "output_lines": 24,
       "output": "............................................................................................ [ 22%]\n............................................................................................ [ 45%]\n............................................................................................ [ 68%]\n............................................................................................ [ 91%]\n..................................                                                           [100%]\n========================================== tests coverage ==========================================\n_________________________ coverage: platform linux, python 3.11.15-final-0 _________________________\n\nName                   Stmts   Miss Branch BrPart  Cover   Missing\n------------------------------------------------------------------\nsrc/srd/__init__.py        2      0      0      0   100%\nsrc/srd/batching.py       78      0     22      0   100%\nsrc/srd/bounds.py        114      0     32      0   100%\nsrc/srd/cli.py           154      0     16      0   100%\nsrc/srd/compare.py        91      0     20      0   100%\nsrc/srd/events.py         98      0     20      0   100%\nsrc/srd/generator.py      75      0     24      0   100%\nsrc/srd/job.py           131      0     22      0   100%\nsrc/srd/metrics.py        55      0     10      0   100%\nsrc/srd/spec.py           50      0     10      0   100%\nsrc/srd/watermark.py      60      0     16      0   100%\n------------------------------------------------------------------\nTOTAL                    908      0    192      0   100%\nRequired test coverage of 100% reached. Total coverage: 100.00%",
       "max_lines": 17,
-      "tail_lines": 4,
-      "seconds": 44.51
+      "tail_lines": 4
     },
     {
       "label": "classify every record from the log alone",
@@ -22,8 +21,7 @@
       "output_lines": 6,
       "output": "records                      30000\ncontingent on batching       2633 (8.78%)\nkeys affected                1\nrows two replays can differ  73 (9.28%)\nevent-time span of those rows 365 minutes\nthis bounds replay against replay, not replay against the original run",
       "max_lines": 9,
-      "tail_lines": 0,
-      "seconds": 0.21
+      "tail_lines": 0
     },
     {
       "label": "rebuild the table from the topic and diff it",
@@ -34,8 +32,7 @@
       "output_lines": 10,
       "output": "rows in the original table   787\nrows the replay produced     820\nrows identical               508\nreplay-stable share          61.95%\n  changed by dropped records 270\n  changed by tie ordering    9\n  present only in the replay 33\n  present only in the table  0\nsessions 205 became 12\nthe replay did not reproduce the table",
       "max_lines": 12,
-      "tail_lines": 0,
-      "seconds": 0.23
+      "tail_lines": 0
     },
     {
       "label": "one record whose fate the log does not determine",
@@ -46,8 +43,7 @@
       "output_lines": 7,
       "output": "offset          15179\nkey             device-north\nevent time      10765000 ms\nworst watermark 10778000 ms\nfate            contingent\na batching that closes before this record discards it; one that does not keeps it\nnothing in the log says which of the two ran",
       "max_lines": 9,
-      "tail_lines": 0,
-      "seconds": 0.2
+      "tail_lines": 0
     },
     {
       "label": "a live batching cannot be rebuilt, and is refused",
@@ -58,8 +54,7 @@
       "output_lines": 1,
       "output": "a live batching cannot be rebuilt from the log: every record in it carries the same arrival time, so the result would be one batch wearing a live run's name",
       "max_lines": 4,
-      "tail_lines": 0,
-      "seconds": 0.18
+      "tail_lines": 0
     },
     {
       "label": "every published figure re-checked against the prose",
@@ -70,8 +65,7 @@
       "output_lines": 1,
       "output": "number check passed: 39 metrics verified against 8 documents, forwards, per document and backwards",
       "max_lines": 3,
-      "tail_lines": 0,
-      "seconds": 0.1
+      "tail_lines": 0
     }
   ]
 }
