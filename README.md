@@ -1,5 +1,7 @@
 # stream-replay-divergence
 
+[![ci](https://github.com/Sruthi0510-data/stream-replay-divergence/actions/workflows/ci.yml/badge.svg)](https://github.com/Sruthi0510-data/stream-replay-divergence/actions/workflows/ci.yml)
+
 A commit log records what arrived. It structurally cannot record what the job
 decided to forget, because that decision belongs to the consumer and is made
 from state the producer never sees. So replaying the log does not reproduce a
@@ -216,6 +218,8 @@ Everything is offline and deterministic. No API keys, no cloud credentials, no
 network at runtime.
 
 ```bash
+git clone https://github.com/Sruthi0510-data/stream-replay-divergence.git
+cd stream-replay-divergence
 python3 -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"
 make verify
