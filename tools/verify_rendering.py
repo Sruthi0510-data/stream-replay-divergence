@@ -46,6 +46,33 @@ inside the library rather than a sentence anyone could act on.
 """
 
 
+def block_the_network(page) -> list[str]:
+    """Refuse every request that is not a local file, and record what was refused.
+
+    The README carries a CI badge served from a third party. Rendering the page
+    makes the browser fetch it, which means a check this repository describes as
+    offline was quietly reaching the internet, and on a machine with no route
+    out it waited for each attempt to time out.
+
+    Aborting those requests makes the check honest and fast. It also makes it
+    stricter: an image that only loads because the network happened to be up is
+    not evidence that the repository renders correctly, and the returned list
+    lets the caller say which hosts the page wanted.
+    """
+    reached: list[str] = []
+
+    def handler(route):
+        url = route.request.url
+        if url.startswith("file://") or url.startswith("data:"):
+            route.continue_()
+            return
+        reached.append(url)
+        route.abort()
+
+    page.route("**/*", handler)
+    return reached
+
+
 def launch_chromium(playwright):
     """Launch Chromium, or raise BrowserUnavailable with a message worth reading."""
     try:
@@ -108,6 +135,7 @@ def _main() -> int:
         with sync_playwright() as playwright:
             browser = launch_chromium(playwright)
             page = browser.new_page(viewport={"width": 1100, "height": 900})
+            offsite = block_the_network(page)
             page.goto(scratch.as_uri())
             page.wait_for_timeout(400)
             images = page.evaluate(
@@ -132,6 +160,8 @@ def _main() -> int:
 
     for image in images:
         print(f"  {image['src']}  {image['width']}x{image['height']}")
+    if offsite:
+        print(f"  {len(offsite)} offsite request(s) blocked, the check stays offline")
     if problems:
         print("rendering check failed:")
         for problem in problems:
