@@ -18,6 +18,10 @@ a documented exit code that has drifted is worse than an undocumented one.
 Determinism: the whole suite under several hash seeds, because Python randomises
 string hashing and this repository has already been bitten by it once.
 
+Published URLs: no badge or clone URL still carries the placeholder handle. A
+warning on a laptop, where the account may genuinely not be chosen yet, and a
+failure in continuous integration, where it is knowable by definition.
+
 Offline: no runtime module imports a network client. The tests can be run with
 the network unplugged and this asserts that they will keep being able to be.
 """
@@ -25,6 +29,7 @@ the network unplugged and this asserts that they will keep being able to be.
 from __future__ import annotations
 
 import ast
+import os
 import re
 import subprocess
 import sys
@@ -130,7 +135,7 @@ def check_exit_codes(problems: list[str]) -> None:
             cwd=ROOT,
             capture_output=True,
             text=True,
-            env={"PYTHONPATH": str(SRC), "PATH": "/usr/bin:/bin"},
+            env={**os.environ, "PYTHONPATH": str(SRC)},
         )
         if result.returncode != expected:
             problems.append(
@@ -147,7 +152,7 @@ def check_determinism(problems: list[str]) -> None:
             cwd=ROOT,
             capture_output=True,
             text=True,
-            env={"PYTHONPATH": str(SRC), "PYTHONHASHSEED": seed, "PATH": "/usr/bin:/bin"},
+            env={**os.environ, "PYTHONPATH": str(SRC), "PYTHONHASHSEED": seed},
         )
         if result.returncode != 0:
             problems.append(f"the suite fails under PYTHONHASHSEED={seed}")
@@ -174,10 +179,54 @@ def check_offline(problems: list[str]) -> None:
         print("  no runtime module imports a network client")
 
 
+
+PLACEHOLDER = "LAXMI-GITHUB-USERNAME"
+IN_CI = os.environ.get("CI") == "true"
+
+
+def check_placeholder(problems: list[str]) -> None:
+    """Catch a badge URL that still points at a placeholder handle.
+
+    A badge whose URL does not match the repository's real path renders as a
+    broken image, and a reader who sees one concludes the build is failing. The
+    repository cannot know the handle before it is published, so this is a
+    warning on a laptop and a failure in continuous integration, where the
+    handle is knowable by definition because the code is already on GitHub.
+    """
+    tracked = [name for name in _git("ls-files").splitlines() if name]
+    hits = []
+    for name in tracked:
+        path = ROOT / name
+        # SELF holds the two files that necessarily contain the strings this
+        # preflight searches for. The placeholder is defined here, so scanning
+        # this file would report the checker to itself, which is the same trap
+        # the attribution scan already documents.
+        if name in SELF or path.suffix in {".png"} or not path.is_file():
+            continue
+        try:
+            if PLACEHOLDER in path.read_text(encoding="utf-8"):
+                hits.append(name)
+        except UnicodeDecodeError:  # pragma: no cover - no such file is tracked
+            continue
+    if not hits:
+        print("  badge and clone URLs name a real account")
+        return
+    message = (
+        f"{len(hits)} file(s) still contain {PLACEHOLDER}: "
+        f"{', '.join(hits)}. Replace it with the account the repository is "
+        f"published under, or the CI badge renders as a broken image."
+    )
+    if IN_CI:
+        problems.append(message)
+    else:
+        print(f"  WARNING  {message}")
+
+
 def main() -> int:
     problems: list[str] = []
     for name, check in (
         ("authorship", check_authorship),
+        ("published urls", check_placeholder),
         ("file attribution", check_no_attribution_in_files),
         ("ascii", check_ascii),
         ("exit codes", check_exit_codes),

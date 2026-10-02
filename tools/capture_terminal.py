@@ -52,7 +52,26 @@ word "in", a number, and a trailing s, which is what pytest emits and what no
 payload in these repositories looks like.
 """
 ABS_PATH = re.compile(re.escape(str(ROOT)))
-INTERPRETER = re.compile(r"\S*/(python3(?:\.\d+)?)\b")
+PREFIX = re.compile(re.escape(sys.prefix))
+"""The interpreter's own installation root, scrubbed out of captured output.
+
+A traceback or a coverage path from inside a virtual environment carries the
+path the environment happens to live at, which is a fact about one machine and
+makes the committed transcript unreproducible anywhere else.
+"""
+INTERPRETER = re.compile(r"(?:\S*/)?python[0-9.]*(?=\s|$)")
+"""Any interpreter, however it was invoked, rendered as `python3`.
+
+The first version matched only a path ending in `python3`, which is what a
+system interpreter looks like and not what a virtual environment's looks like:
+inside a venv `sys.executable` ends in `/bin/python`, with no digit, so the
+pattern missed and the full absolute path went into the committed transcript.
+
+That was not a cosmetic leak. The transcript is under a drift check, so a
+capture made in one environment could never match a capture made in another,
+and continuous integration failed on every run with a diff nobody could act on.
+The rule is now about the command name rather than about one spelling of it.
+"""
 
 BG = "#14161a"
 FG = "#d8dee6"
@@ -98,6 +117,8 @@ class Step:
 def _normalise(text: str) -> str:
     text = ABS_PATH.sub(".", text)
     text = ELAPSED.sub("in <elapsed>", text)
+    text = PREFIX.sub("<env>", text)
+    text = ELAPSED.sub("in <elapsed>", text)
     return text.replace("\r", "")
 
 
@@ -109,7 +130,7 @@ def _display(argv: Sequence[str]) -> str:
     transcript that leaks it invites somebody to copy a command that will not
     run anywhere else.
     """
-    return " ".join(INTERPRETER.sub(r"\1", part) for part in argv)
+    return " ".join(INTERPRETER.sub("python3", part) for part in argv)
 
 
 def run(step: Step, env: dict[str, str]) -> dict[str, object]:

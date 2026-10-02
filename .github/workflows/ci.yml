@@ -4,53 +4,147 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+# A superseded run tells you nothing and costs a runner, so cancel it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Read-only by default. Nothing here writes to the repository, and a workflow
+# that does not say so inherits whatever the account default happens to be.
+permissions:
+  contents: read
+
+env:
+  # The rendering tools skip a missing browser on a laptop and fail here, where
+  # the browser is installed on purpose and a silent skip would mean the
+  # rendering checks had quietly stopped running.
+  REQUIRE_BROWSER: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
 
 jobs:
   suite:
+    name: suite on python ${{ matrix.python }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The preflight asserts the whole history has one author. A shallow
+          # clone gives it one commit, which passes the check without testing
+          # anything.
+          fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
       - name: install
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-          python -m playwright install --with-deps chromium
+
       - name: suite with branch coverage
         run: |
-          python -m pytest -q --cov=srd --cov-branch \
-            --cov-report=json:coverage.json --junitxml=junit.xml \
-            --cov-report=term-missing --cov-fail-under=100
-      # The suite is deterministic or it is not a suite. Python randomises string
-      # hashing per process, and an earlier version of the generator leaked that
-      # randomness into every published figure.
+          make cover
+
+      # Python randomises string hashing per process. This repository has been
+      # bitten by that once already, in a generator that leaked the randomness
+      # into every published figure.
       - name: determinism under a changed hash seed
         run: |
-          for seed in 1 7 4096; do
-            PYTHONHASHSEED=$seed python -m pytest -q
-          done
-      - name: experiments and metrics
-        run: python tools/collect_metrics.py --skip-tests
-      - name: diagrams and report
+          for seed in 1 7 4096; do PYTHONHASHSEED=$seed make test; done
+
+      - name: upload the coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.python }}
+          path: |
+            coverage.json
+            junit.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+  artefacts:
+    name: figures, documents and transcript
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: suite
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: install
         run: |
-          python tools/render_diagrams.py
-          python tools/build_report.py
-          python tools/capture_screenshots.py
-          python tools/proof_of_work.py
-          python tools/verify_rendering.py
-      # Generated text is committed, so regenerating it must be a no-op. The PNG
-      # screenshots are deliberately outside this check: Chromium's raster output is
-      # not byte-reproducible across machines, and a drift check that fails on
-      # antialiasing teaches people to ignore drift checks.
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: install chromium
+        run: python -m playwright install --with-deps chromium
+
+      # Every step below asks the Makefile for an outcome. The seven
+      # repositories in this portfolio expose the same target names, so one
+      # workflow drives them all and none of them has to teach the workflow how
+      # it builds its own report.
+      - name: re-measure every published figure
+        run: python tools/collect_metrics.py --skip-tests
+
+      - name: diagrams, report and screenshots
+        run: |
+          make diagrams
+          make report
+
+      # Generated text is committed, so regenerating it must be a no-op.
+      #
+      # The PNG screenshots are outside this check because Chromium's raster
+      # output is not byte-reproducible across machines and font stacks, and a
+      # drift check that fails on antialiasing is a check people learn to
+      # ignore.
+      #
+      # The captured transcript is outside it for a stronger reason: it is a
+      # record of a run on one machine, not a deterministic artefact, and
+      # holding a record to a byte-exact comparison against a different machine
+      # is a category error. Its content is checked instead, by the test that
+      # asserts every captured command exited as the README claims.
       - name: generated tables and diagrams have not drifted
         run: |
-          python tools/render_tables.py
-          python tools/render_diagrams.py
-          python tools/proof_of_work.py
-          git diff --exit-code README.md 'docs/img/*.svg'
-      - name: every published figure still matches the code
-        run: python tools/check_numbers.py
-      - name: authorship and offline guarantees
-        run: python tools/preflight.py
+          make tables
+          make diagrams
+          git diff --exit-code -- README.md 'docs/img/*.svg' ':!docs/img/proof-of-work.svg'
+
+      - name: capture the command line
+        run: make proof
+
+      - name: every published figure still matches the prose
+        run: make check
+
+      - name: authorship, ascii, exit codes, determinism and offline guarantees
+        run: make preflight
+
+      - name: upload the generated artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: artefacts
+          path: |
+            docs/report.html
+            docs/img/
+            docs/metrics.json
+            docs/proof-of-work.json
+          if-no-files-found: warn
+          retention-days: 14

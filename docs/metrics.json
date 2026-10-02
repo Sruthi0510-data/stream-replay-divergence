@@ -128,6 +128,7 @@
     "docs/adr/ADR-004-processing-time-timers-are-not-replayable.md",
     "docs/adr/ADR-005-what-this-repository-cannot-measure.md"
   ],
+  "measured_despite_a_red_suite": false,
   "metrics": {
     "allowed_lateness_s": 30,
     "best_lateness_pct": 99.0,

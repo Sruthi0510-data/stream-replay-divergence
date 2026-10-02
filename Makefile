@@ -1,58 +1,80 @@
-.PHONY: help test cover fixtures experiments tables report check preflight verify clean
+# Every target here runs offline. `make verify` is the one the README promises a
+# reviewer, so it is the one that must never be broken.
+#
+# The target names are the same in all seven repositories of this portfolio, so
+# one CI workflow drives them all and the workflow never needs to know how any
+# individual repository builds its own report.
 
 PY ?= python3
-SRC := src
+PKG := srd
+
+.PHONY: help install test cover receipts tables diagrams report proof check \
+	preflight verify clean fixtures pdf
+
+# Exported so every target works from a bare clone, before `make install` has
+# been run. With the package installed this resolves to the same code, so the
+# two ways of working cannot disagree.
+export PYTHONPATH := src
 
 help:
-	@echo "test        run the suite"
-	@echo "cover       run the suite with branch coverage, failing under 100 percent"
-	@echo "fixtures    regenerate the log and the original run's output"
-	@echo "experiments run every experiment, writing JSON under reports/"
-	@echo "tables      regenerate the generated blocks in the README"
-	@echo "report      build the HTML report and the diagrams"
-	@echo "check       fail if a document quotes a figure the code no longer produces"
-	@echo "preflight   authorship, ascii, exit codes, determinism and offline checks"
-	@echo "verify      everything, in the order CI runs it"
+	@echo "install      editable install with the dev extra"
+	@echo "test         run the suite"
+	@echo "cover        the suite with branch coverage, failing under 100 percent"
+	@echo "receipts     re-measure every published figure into docs/metrics.json"
+	@echo "tables       rewrite the generated blocks in the README"
+	@echo "diagrams     re-render the committed SVGs from docs/metrics.json"
+	@echo "report       build docs/report.html and screenshot it"
+	@echo "proof        capture the command line into a committed transcript"
+	@echo "check        fail if a document quotes a figure the code no longer produces"
+	@echo "preflight    authorship, ascii, exit codes, determinism, offline, urls"
+	@echo "verify       everything, in the order CI runs it"
+
+install:
+	$(PY) -m pip install -e ".[dev]"
 
 test:
-	PYTHONPATH=$(SRC) $(PY) -m pytest tests
+	$(PY) -m pytest -q
 
 cover:
-	PYTHONPATH=$(SRC) $(PY) -m pytest tests --cov=srd --cov-report=term-missing --cov-branch --cov-fail-under=100
+	$(PY) -m pytest -q --cov=$(PKG) --cov-branch --cov-report=term-missing \
+		--cov-report=json:coverage.json --junitxml=junit.xml --cov-fail-under=100
 
-clean:
-	rm -rf .pytest_cache .coverage htmlcov
-
-fixtures:
-	PYTHONPATH=$(SRC) $(PY) -m srd.cli generate
-
-experiments:
-	@for script in experiments/exp*.py; do \
-		echo "-- $$script"; \
-		PYTHONPATH=$(SRC) $(PY) $$script > /dev/null || exit 1; \
-	done
-	PYTHONPATH=$(SRC) $(PY) tools/collect_metrics.py
+# Depends on nothing and runs the suite itself, with --skip-tests left to the
+# caller. A red suite surfacing as a CalledProcessError from inside a metrics
+# script costs an hour to attribute, so CI runs the suite as its own step first
+# and then calls this with the reports already on disk.
+receipts:
+	$(PY) tools/collect_metrics.py
 
 tables:
-	PYTHONPATH=$(SRC) $(PY) tools/render_tables.py
+	$(PY) tools/render_tables.py
+
+diagrams:
+	$(PY) tools/render_diagrams.py
 
 report:
-	PYTHONPATH=$(SRC) $(PY) tools/render_diagrams.py
-	PYTHONPATH=$(SRC) $(PY) tools/build_report.py
-	PYTHONPATH=$(SRC) $(PY) tools/capture_screenshots.py
-	PYTHONPATH=$(SRC) $(PY) tools/proof_of_work.py
-	PYTHONPATH=$(SRC) $(PY) tools/verify_rendering.py
+	$(PY) tools/build_report.py
+	$(PY) tools/capture_screenshots.py
+	$(PY) tools/verify_rendering.py
+
+proof:
+	$(PY) tools/proof_of_work.py
 
 check:
-	PYTHONPATH=$(SRC) $(PY) tools/check_numbers.py
+	$(PY) tools/check_numbers.py
 
 preflight:
-	PYTHONPATH=$(SRC) $(PY) tools/preflight.py
+	$(PY) tools/preflight.py
 
-verify: cover experiments tables report check
+verify: cover receipts tables diagrams report proof check
 	@echo "verified"
 
+clean:
+	rm -rf .pytest_cache .coverage htmlcov coverage.json junit.xml
+
+fixtures:
+	$(PY) -m srd.cli generate
+
 pdf:
-	PYTHONPATH=$(SRC) $(PY) tools/build_pdf.py docs/runbook.md \
-		--out dist/runbook.pdf --title "stream-replay-divergence" \
-		--subtitle "Runbook: somebody has said just reprocess from Kafka"
+	$(PY) tools/build_pdf.py docs/runbook.md --out dist/runbook.pdf \
+		--title "stream-replay-divergence" --subtitle "Runbook"

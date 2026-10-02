@@ -90,16 +90,35 @@ ANCHORS: dict[str, list[str]] = {
 }
 
 
-def run_tests() -> None:
-    """Run pytest with machine readable reports. Skipped in CI, where it is its own step."""
-    subprocess.run(
+def run_tests() -> bool:
+    """Run pytest with machine readable reports. Returns whether it was green.
+
+    Deliberately does not raise on a red suite, and that is a fix rather than a
+    looseness. The suite contains a test that runs the number checker, the
+    number checker compares the documents against the figures this script
+    writes, and this script is how a stale figure gets corrected. Refusing to
+    measure until the suite is green therefore made a stale figure unfixable:
+    the only tool that could repair it declined to run until it had already been
+    repaired.
+
+    pytest writes its junit and coverage reports whether it passes or fails, so
+    the measurement is available either way. A red suite is a fact to print
+    loudly, not a reason to refuse to measure.
+    """
+    result = subprocess.run(
         [
             sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
             "--cov=srd", f"--cov-report=json:{COVERAGE_JSON}", f"--junitxml={JUNIT}",
         ],
         cwd=ROOT,
-        check=True,
+        check=False,
     )
+    if result.returncode != 0:
+        print(
+            "  the suite is red; measuring anyway so a stale figure can be "
+            "corrected, then run it again"
+        )
+    return result.returncode == 0
 
 
 def read_test_count() -> int:
@@ -126,8 +145,9 @@ def run_experiments() -> dict[str, Any]:
 
 
 def build_metrics(skip_tests: bool) -> dict[str, Any]:
+    green = True
     if not skip_tests:
-        run_tests()
+        green = run_tests()
     line_pct, branch_pct = read_coverage()
     experiments = run_experiments()
     headline = experiments["exp01"]
@@ -182,6 +202,7 @@ def build_metrics(skip_tests: bool) -> dict[str, Any]:
         "table_values": table_values(),
         "anchors": ANCHORS,
         "checked_documents": CHECKED_DOCUMENTS,
+        "measured_despite_a_red_suite": not green,
         "note": (
             "every value here is produced by running the suite and the experiments; "
             "tools/check_numbers.py fails the build when a document quotes a figure the code "

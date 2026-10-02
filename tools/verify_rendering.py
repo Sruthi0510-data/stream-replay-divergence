@@ -16,6 +16,7 @@ test rather than the diagram, which is why the scratch page is written to disk h
 
 from __future__ import annotations
 
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -23,6 +24,41 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 README = ROOT / "README.md"
 
+
+
+REQUIRE_BROWSER = os.environ.get("REQUIRE_BROWSER") == "1"
+"""Whether a missing browser is a failure or a skip.
+
+Locally it is a skip: a contributor reading the repository should be able to run
+everything else without installing a browser engine, and a stack trace from a
+tool that only draws pictures teaches them the build is fragile.
+
+In continuous integration it is a failure, because there the browser is
+installed on purpose and a silent skip would mean the rendering checks quietly
+stopped running. The workflow sets REQUIRE_BROWSER=1, so the same code is
+forgiving on a laptop and strict where it matters.
+
+An earlier version caught only ModuleNotFoundError, which is raised when the
+playwright package is absent and not when the package is present and its browser
+binaries are not. That is the common case on a fresh machine and in a CI job
+whose browser install step failed, and it ended the run with a stack trace from
+inside the library rather than a sentence anyone could act on.
+"""
+
+
+def launch_chromium(playwright):
+    """Launch Chromium, or raise BrowserUnavailable with a message worth reading."""
+    try:
+        return playwright.chromium.launch()
+    except Exception as exc:  # noqa: BLE001 - the library raises its own error type
+        raise BrowserUnavailable(
+            "chromium is not installed for playwright; run "
+            "'python -m playwright install --with-deps chromium'"
+        ) from exc
+
+
+class BrowserUnavailable(RuntimeError):
+    """Raised when playwright is importable and its browser binaries are not."""
 
 def render_readme(source: str) -> str:
     """Render markdown with the library GitHub uses, or fall back with a clear warning."""
@@ -41,8 +77,22 @@ def render_readme(source: str) -> str:
 
 def main() -> int:
     try:
+        return _main()
+    except BrowserUnavailable as exc:
+        if REQUIRE_BROWSER:
+            print(f"{exc}")
+            return 1
+        print(f"{exc}; skipping")
+        return 0
+
+
+def _main() -> int:
+    try:
         from playwright.sync_api import sync_playwright
     except ModuleNotFoundError:
+        if REQUIRE_BROWSER:
+            print("playwright is required here and is not installed")
+            return 1
         print("playwright is not installed; skipping the rendering check")
         return 0
 
@@ -56,7 +106,7 @@ def main() -> int:
     problems: list[str] = []
     try:
         with sync_playwright() as playwright:
-            browser = playwright.chromium.launch()
+            browser = launch_chromium(playwright)
             page = browser.new_page(viewport={"width": 1100, "height": 900})
             page.goto(scratch.as_uri())
             page.wait_for_timeout(400)
