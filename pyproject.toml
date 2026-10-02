@@ -16,6 +16,7 @@ dev = [
   "coverage>=7",
   "playwright>=1.40",
   "cmarkgfm>=2024.1.14",
+  "ruff>=0.4",
 ]
 
 [project.scripts]
