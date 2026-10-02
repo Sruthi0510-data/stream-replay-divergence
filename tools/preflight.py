@@ -181,17 +181,21 @@ def check_offline(problems: list[str]) -> None:
 
 
 PLACEHOLDER = "LAXMI-GITHUB-USERNAME"
-IN_CI = os.environ.get("CI") == "true"
 
 
 def check_placeholder(problems: list[str]) -> None:
     """Catch a badge URL that still points at a placeholder handle.
 
     A badge whose URL does not match the repository's real path renders as a
-    broken image, and a reader who sees one concludes the build is failing. The
-    repository cannot know the handle before it is published, so this is a
-    warning on a laptop and a failure in continuous integration, where the
-    handle is knowable by definition because the code is already on GitHub.
+    broken image, and a reader who sees one concludes the build is failing.
+
+    This warns and never fails, which is a correction of an earlier version that
+    failed in continuous integration. The reasoning there was that the handle is
+    knowable once the code is on GitHub, which is true and leads to the wrong
+    place: it turns a cosmetic problem into a red build, and a red build is a
+    worse first impression than the broken badge it was protecting against. The
+    workflow raises the same thing as an annotation instead, where it is visible
+    and harmless.
     """
     tracked = [name for name in _git("ls-files").splitlines() if name]
     hits = []
@@ -211,15 +215,13 @@ def check_placeholder(problems: list[str]) -> None:
     if not hits:
         print("  badge and clone URLs name a real account")
         return
-    message = (
-        f"{len(hits)} file(s) still contain {PLACEHOLDER}: "
+    print(
+        f"  WARNING  {len(hits)} file(s) still contain {PLACEHOLDER}: "
         f"{', '.join(hits)}. Replace it with the account the repository is "
-        f"published under, or the CI badge renders as a broken image."
+        f"published under, or the badge renders as a broken image. Run: "
+        f"grep -rl {PLACEHOLDER} . --exclude-dir=.git | xargs sed -i "
+        f"'s/{PLACEHOLDER}/<your-handle>/g'"
     )
-    if IN_CI:
-        problems.append(message)
-    else:
-        print(f"  WARNING  {message}")
 
 
 def main() -> int:

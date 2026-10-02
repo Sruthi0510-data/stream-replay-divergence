@@ -133,6 +133,19 @@ jobs:
       - name: every published figure still matches the prose
         run: make check
 
+      # The badge URL has to match the repository's real path, including case,
+      # or GitHub serves a broken image and a reader concludes the build is
+      # failing. This is an annotation rather than a failure: a red build is a
+      # worse first impression than the thing it would be protecting against.
+      - name: the badge URL names this repository
+        run: |
+          expected="https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg"
+          if ! grep -qF "$expected" README.md; then
+            echo "::warning title=Badge URL::README.md does not contain $expected. Run: grep -rl LAXMI-GITHUB-USERNAME . --exclude-dir=.git | xargs sed -i 's/LAXMI-GITHUB-USERNAME/${{ github.repository_owner }}/g'"
+          else
+            echo "badge URL matches ${{ github.repository }}"
+          fi
+
       - name: authorship, ascii, exit codes, determinism and offline guarantees
         run: make preflight
 
