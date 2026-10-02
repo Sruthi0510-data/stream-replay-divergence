@@ -13,7 +13,6 @@ import pytest
 
 from srd.events import (
     EventLog,
-    LoggedEvent,
     MalformedLogError,
     ObservedEvent,
     observed_order,

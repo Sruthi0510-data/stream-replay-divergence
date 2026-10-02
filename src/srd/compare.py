@@ -122,7 +122,7 @@ class Divergence:
         return max(0, self.original_sessions - self.replay_sessions) / self.original_sessions
 
     def by_arm(self) -> dict[Arm, int]:
-        counts = {arm: 0 for arm in Arm}
+        counts = dict.fromkeys(Arm, 0)
         for row in self.rows:
             counts[row.arm] += 1
         counts[Arm.SESSION_MERGE] = sum(1 for diff in self.sessions if diff.lost)

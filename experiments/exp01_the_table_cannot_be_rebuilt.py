@@ -38,7 +38,7 @@ def main() -> dict[str, object]:
     )
     diff = compare(original, replayed)
     arms = diff.by_arm()
-    result = {
+    return {
         "records": len(log),
         "original_rows": diff.original_rows,
         "replay_rows": diff.replay_rows,
@@ -56,7 +56,6 @@ def main() -> dict[str, object]:
         "replay_dropped": len(replayed.dropped),
         "replay_batches": replayed.batch_count,
     }
-    return result
 
 
 if __name__ == "__main__":

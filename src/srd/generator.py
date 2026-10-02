@@ -120,7 +120,7 @@ def _partition_of(key: str, offset: int, partitions: int) -> int:
     partitions, which is what a keyed partitioner does not do and what a
     round-robin one does. Mixing the two is deliberate: real topics have both.
     """
-    return zlib.crc32(f"{key}:{offset % 7}".encode("utf-8")) % partitions
+    return zlib.crc32(f"{key}:{offset % 7}".encode()) % partitions
 
 
 def _quiet_intervals(config: GeneratorConfig) -> tuple[tuple[int, int], ...]:

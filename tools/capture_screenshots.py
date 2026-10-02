@@ -23,8 +23,8 @@ stale report is worse than no screenshot.
 from __future__ import annotations
 
 import json
-import subprocess
 import os
+import subprocess
 import sys
 from pathlib import Path
 

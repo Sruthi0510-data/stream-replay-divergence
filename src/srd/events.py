@@ -21,9 +21,9 @@ it with what it read back from the log.
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Iterator, Sequence
 
 __all__ = [
     "LoggedEvent",

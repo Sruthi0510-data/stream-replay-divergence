@@ -23,11 +23,11 @@ omission was an oversight.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Sequence
 
-from srd.batching import Batch, Batcher
+from srd.batching import Batcher
 from srd.events import ObservedEvent
 from srd.watermark import WatermarkPolicy, WatermarkState, WatermarkStep
 

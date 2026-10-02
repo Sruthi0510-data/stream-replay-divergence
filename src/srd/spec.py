@@ -72,7 +72,7 @@ class PipelineSpec:
         )
 
     @classmethod
-    def from_file(cls, path: Path) -> "PipelineSpec":
+    def from_file(cls, path: Path) -> PipelineSpec:
         try:
             raw = tomllib.loads(path.read_text(encoding="utf-8"))
         except FileNotFoundError as exc:

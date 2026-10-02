@@ -230,7 +230,8 @@ def test_a_replay_collapses_every_session_into_one(make_observed, make_logged):
     few milliseconds. No gap elapses and no allowed lateness affects it.
     """
     live = [make_observed(index, index * 10, index * 3_600_000) for index in range(9)]
-    original = run(config(session_gap_ms=1_000, watermark=WatermarkPolicy(allowed_lateness_ms=10**9)), WallClockBatcher(interval_ms=1_000), live)
+    forgiving = config(session_gap_ms=1_000, watermark=WatermarkPolicy(allowed_lateness_ms=10**9))
+    original = run(forgiving, WallClockBatcher(interval_ms=1_000), live)
     replayed = run(
         config(session_gap_ms=1_000, watermark=WatermarkPolicy(allowed_lateness_ms=10**9)),
         SingleBatch(),
@@ -286,7 +287,8 @@ def test_a_window_row_is_frozen():
 
 def test_an_empty_batch_still_produces_a_watermark_step(make_observed):
     events = [make_observed(0, 0, 0), make_observed(1, 0, 900)]
-    result = run(config(watermark=WatermarkPolicy(allowed_lateness_ms=10**9)), WallClockBatcher(interval_ms=100), events)
+    forgiving = config(watermark=WatermarkPolicy(allowed_lateness_ms=10**9))
+    result = run(forgiving, WallClockBatcher(interval_ms=100), events)
     assert any(step.records == 0 for step in result.watermark_steps)
 
 

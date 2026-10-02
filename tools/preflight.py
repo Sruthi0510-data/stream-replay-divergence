@@ -183,7 +183,7 @@ def check_offline(problems: list[str]) -> None:
 PLACEHOLDER = "LAXMI-GITHUB-USERNAME"
 
 
-def check_placeholder(problems: list[str]) -> None:
+def check_placeholder(problems: list[str]) -> None:  # noqa: ARG001 - uniform check signature
     """Catch a badge URL that still points at a placeholder handle.
 
     A badge whose URL does not match the repository's real path renders as a

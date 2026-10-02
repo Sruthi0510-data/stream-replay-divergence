@@ -36,3 +36,23 @@ source = ["src/srd"]
 show_missing = true
 fail_under = 100
 exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests", "tools", "experiments"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "RET", "ARG", "PTH"]
+ignore = ["B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["srd", "tests"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ARG001", "ARG002"]
+# argparse hands every handler the same namespace, so a handler that does
+# not read it still has to accept it.
+"src/*/cli.py" = ["ARG001"]
+"tools/*" = ["PTH", "E402"]
+"experiments/*" = ["E402"]

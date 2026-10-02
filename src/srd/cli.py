@@ -20,8 +20,8 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from srd.batching import SingleBatch, ThroughputBatcher, WallClockBatcher, as_observed
 from srd.bounds import Fate, classify, rewrite_window

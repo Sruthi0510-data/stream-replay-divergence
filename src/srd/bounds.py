@@ -62,10 +62,10 @@ wants bounded.
 
 from __future__ import annotations
 
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from itertools import product
-from typing import Iterator, Sequence
 
 from srd.events import EventLog, LoggedEvent
 from srd.job import window_start

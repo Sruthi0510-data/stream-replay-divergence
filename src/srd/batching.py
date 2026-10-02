@@ -16,8 +16,9 @@ it off.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Protocol, Sequence
+from typing import Protocol
 
 from srd.events import LoggedEvent, ObservedEvent, observed_order
 

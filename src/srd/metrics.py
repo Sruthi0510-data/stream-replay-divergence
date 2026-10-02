@@ -34,8 +34,8 @@ format is four lines of rules.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Iterable, Mapping, Sequence
 
 from srd.events import LoggedEvent
 
@@ -101,7 +101,10 @@ METRICS: tuple[Metric, ...] = (
         name="srd_partition_watermark_deficit_ms",
         kind=GAUGE,
         help_text="How far the global watermark's driver leads the slowest partition's newest record.",
-        catches="A partition falling behind, before the drops start. Crosses the allowed lateness exactly when its fresh records begin to be discarded.",
+        catches=(
+            "A partition falling behind, before the drops start. Crosses the "
+            "allowed lateness exactly when its fresh records begin to be discarded."
+        ),
     ),
     Metric(
         name="srd_batch_records",

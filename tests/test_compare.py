@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from srd.batching import SingleBatch, ThroughputBatcher, WallClockBatcher, as_observed
+from srd.batching import SingleBatch, WallClockBatcher, as_observed
 from srd.compare import Arm, Divergence, RowDiff, SessionDiff, compare
 from srd.job import JobConfig, RunResult, SessionRow, WindowRow, run
 from srd.watermark import WatermarkPolicy

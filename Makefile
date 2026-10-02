@@ -8,7 +8,7 @@
 PY ?= python3
 PKG := srd
 
-.PHONY: help install test cover receipts tables diagrams report proof check \
+.PHONY: help install lint test cover receipts tables diagrams report proof check \
 	preflight verify clean fixtures pdf
 
 # Exported so every target works from a bare clone, before `make install` has
@@ -18,6 +18,7 @@ export PYTHONPATH := src
 
 help:
 	@echo "install      editable install with the dev extra"
+	@echo "lint         ruff over src, tests, tools and experiments"
 	@echo "test         run the suite"
 	@echo "cover        the suite with branch coverage, failing under 100 percent"
 	@echo "receipts     re-measure every published figure into docs/metrics.json"
@@ -31,6 +32,9 @@ help:
 
 install:
 	$(PY) -m pip install -e ".[dev]"
+
+lint:
+	$(PY) -m ruff check .
 
 test:
 	$(PY) -m pytest -q
@@ -66,7 +70,7 @@ check:
 preflight:
 	$(PY) tools/preflight.py
 
-verify: cover receipts tables diagrams report proof check
+verify: lint cover receipts tables diagrams report proof check
 	@echo "verified"
 
 clean:

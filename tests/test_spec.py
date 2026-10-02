@@ -81,7 +81,11 @@ def test_a_missing_key_is_named(tmp_path: Path):
 
 def test_every_missing_key_is_named_at_once(tmp_path: Path):
     with pytest.raises(SpecError, match="allowed_lateness_ms, per_partition"):
-        PipelineSpec.from_file(write(tmp_path, "[job]\nwindow_ms = 1\nsession_gap_ms = 1\n\n[runtime]\ntrigger_interval_ms = 1\nreplay_batch_records = 1\n"))
+        half = (
+            "[job]\nwindow_ms = 1\nsession_gap_ms = 1\n\n"
+            "[runtime]\ntrigger_interval_ms = 1\nreplay_batch_records = 1\n"
+        )
+        PipelineSpec.from_file(write(tmp_path, half))
 
 
 def test_a_value_of_the_wrong_type_is_refused(tmp_path: Path):

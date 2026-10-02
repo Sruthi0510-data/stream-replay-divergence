@@ -128,7 +128,7 @@ def test_the_quiet_keys_really_do_go_quiet(shipped):
     config = GeneratorConfig()
     for key in config.quiet_keys:
         stamps = sorted(event.event_time_ms for event in shipped if event.key == key)
-        gaps = [later - earlier for earlier, later in zip(stamps, stamps[1:])]
+        gaps = [later - earlier for earlier, later in zip(stamps, stamps[1:], strict=False)]
         assert max(gaps) >= config.quiet_gap_ms
 
 
@@ -136,7 +136,7 @@ def test_a_key_that_is_not_quiet_has_no_such_gap(shipped):
     config = GeneratorConfig()
     noisy = [key for key in KEY_NAMES if key not in config.quiet_keys]
     stamps = sorted(event.event_time_ms for event in shipped if event.key == noisy[0])
-    gaps = [later - earlier for earlier, later in zip(stamps, stamps[1:])]
+    gaps = [later - earlier for earlier, later in zip(stamps, stamps[1:], strict=False)]
     assert max(gaps) < config.quiet_gap_ms
 
 

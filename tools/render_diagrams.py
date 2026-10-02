@@ -50,14 +50,23 @@ def _header(width: int, height: int, title: str, description: str) -> list[str]:
     ]
 
 
-def _text(x: float, y: float, content: str, *, size: int = 13, fill: str = INK, weight: str = "400", anchor: str = "start") -> str:
+def _text(
+    x: float,
+    y: float,
+    content: str,
+    *,
+    size: int = 13,
+    fill: str = INK,
+    weight: str = "400",
+    anchor: str = "start",
+) -> str:
     return (
         f'<text x="{x:.1f}" y="{y:.1f}" {FONT} font-size="{size}" font-weight="{weight}" '
         f'fill="{fill}" text-anchor="{anchor}">{content}</text>'
     )
 
 
-def two_timelines(metrics: dict) -> str:
+def two_timelines(metrics: dict) -> str:  # noqa: ARG001 - uniform builder signature
     """The same records, two trigger schedules, two verdicts.
 
     The top row is the live run: many small triggers, and a record that falls
@@ -138,7 +147,7 @@ def two_timelines(metrics: dict) -> str:
     return "\n".join(parts)
 
 
-def where_the_rows_went(metrics: dict) -> str:
+def where_the_rows_went(metrics: dict) -> str:  # noqa: ARG001 - uniform builder signature
     """The output table, split by what happened to each row."""
     rows = [
         ("identical in both runs", metrics["stable_rows"], GREEN),

@@ -53,7 +53,8 @@ def lateness_table() -> tuple[str, list[Any]]:
     payload = json.loads((EXPERIMENTS / "exp03.json").read_text())
     values: list[Any] = []
     lines = [
-        "| allowed lateness | records the original dropped | replay-stable rows | rows still differing | of those, tie ordering |",
+        "| allowed lateness | records the original dropped | replay-stable rows | "
+        "rows still differing | of those, tie ordering |",
         "| --- | --- | --- | --- | --- |",
     ]
     for record in payload["by_lateness"]:
