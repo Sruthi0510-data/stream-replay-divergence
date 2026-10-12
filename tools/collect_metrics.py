@@ -120,7 +120,7 @@ def run_tests() -> bool:
     result = subprocess.run(
         [
             sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
-            "--cov=srd", f"--cov-report=json:{COVERAGE_JSON}", f"--junitxml={JUNIT}",
+            "--cov=srd", "--cov-branch", f"--cov-report=json:{COVERAGE_JSON}", f"--junitxml={JUNIT}",
         ],
         cwd=ROOT,
         check=False,
@@ -133,17 +133,49 @@ def run_tests() -> bool:
     return result.returncode == 0
 
 
+def require_report(path: Path, produced_by: str) -> Path:
+    """Fail with the reason rather than a traceback when a report is absent.
+
+    --skip-tests reads the reports a previous pytest run left behind, and those
+    reports are not tracked. A fresh checkout that has not run the suite does
+    not have them, which is exactly what a continuous integration job that
+    builds the artefacts on a second runner is. The FileNotFoundError this used
+    to raise named a path and nothing else, and a path looks like a bug in the
+    tool rather than a missing step in the caller.
+    """
+    if not path.exists():
+        raise SystemExit(
+            f"{path.name} is not here, and --skip-tests reads it instead of "
+            f"running the suite. Run `{produced_by}` first, or drop --skip-tests."
+        )
+    return path
+
+
 def read_test_count() -> int:
-    root = ET.parse(JUNIT).getroot()
+    """Read the test total from the junit report rather than from stdout."""
+    root = ET.parse(require_report(JUNIT, "make cover")).getroot()
     suite = root if root.tag == "testsuite" else root[0]
     return int(suite.get("tests", 0))
 
 
 def read_coverage() -> tuple[float, float]:
-    totals = json.loads(COVERAGE_JSON.read_text())["totals"]
+    """Read line and branch coverage from the JSON report.
+
+    A report written without --cov-branch carries no branch data, and the
+    fallback here used to be 100.0. That is the worst available default: the
+    tool published a perfect branch figure that nothing had measured, in a
+    repository whose whole argument is that every published figure was. An
+    absent measurement is not a passing one, so it refuses instead.
+    """
+    totals = json.loads(require_report(COVERAGE_JSON, "make cover").read_text())["totals"]
     line = round(float(totals["percent_covered"]), 1)
-    covered, total = totals.get("covered_branches", 0), totals.get("num_branches", 0)
-    return line, (round(100.0 * covered / total, 1) if total else 100.0)
+    branches = totals.get("num_branches", 0)
+    if not branches:
+        raise SystemExit(
+            "coverage.json carries no branch data, so no branch percentage can "
+            "be read from it. It was written without --cov-branch."
+        )
+    return line, round(100.0 * totals.get("covered_branches", 0) / branches, 1)
 
 
 def run_experiments() -> dict[str, Any]:
