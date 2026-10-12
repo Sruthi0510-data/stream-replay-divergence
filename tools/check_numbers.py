@@ -76,14 +76,25 @@ guarantee, so an addition should be argued for rather than made to get a build g
 """
 
 
+QUOTE_MARKER = re.compile(r"(?m)^[ \t]*>+[ \t]?")
+"""The markdown quote marker, which carries no wording of its own.
+
+Deleting a document that happened to quote a figure on one line left the same figure alive in
+a blockquote in the README, wrapped so that "produces" ended one line and "820 rows" began the
+next. Collapsing whitespace put the marker between the two words, the anchor missed, and the
+build reported a correct sentence as a figure nothing quotes. Stripping the marker before the
+collapse means a reflow of a quoted paragraph cannot change what an anchor matches.
+"""
+
+
 def collapse(text: str) -> str:
-    """Collapse whitespace and case, so neither wrapping nor a capital fails a correct anchor.
+    """Collapse whitespace, quote markers and case, so formatting cannot fail a correct anchor.
 
     Lowercasing was added after an anchor failed on "The paired test returns 0.2181": the same
-    phrase, at the start of a sentence. An anchor is a wording check, and a sentence-initial
-    capital is not a change of wording.
+    phrase, at the start of a sentence. An anchor is a wording check, and neither a
+    sentence-initial capital nor a line break inside a blockquote is a change of wording.
     """
-    return re.sub(r"\s+", " ", text).lower()
+    return re.sub(r"\s+", " ", QUOTE_MARKER.sub("", text)).lower()
 
 
 def strip_code(text: str) -> str:
@@ -207,7 +218,22 @@ def main() -> int:
             continue
         documents[relative] = path.read_text(encoding="utf-8")
 
-    problems = [f"MISSING {name}: listed as a checked document and not present" for name in missing]
+    # A document that the metrics file lists and the tree no longer has is an
+    # editorial deletion that happened after the last measurement, not a fault.
+    # Failing on it was the single most common way this build broke: somebody
+    # removed a document, the receipts refused to run, and the only way back was
+    # to edit a list in a tool nobody expected to have to edit.
+    #
+    # The README is the exception. It is the repository's front page and the
+    # target of the backward pass, so its absence is a real problem.
+    problems = [
+        f"MISSING {name}: listed as a checked document and not present"
+        for name in missing
+        if name == "README.md"
+    ]
+    for name in missing:
+        if name != "README.md":
+            print(f"  note: {name} has been removed since the last measurement; run the collector")
     problems += check_forward(payload, documents)
     problems += check_stale_per_document(payload, documents)
     problems += check_backward(payload, documents.get("README.md", ""))

@@ -121,12 +121,12 @@
   },
   "checked_documents": [
     "README.md",
-    "docs/runbook.md",
     "docs/adr/ADR-001-the-log-is-not-the-run.md",
     "docs/adr/ADR-002-the-watermark-is-evaluated-a-batch-behind.md",
     "docs/adr/ADR-003-three-arms-and-no-more.md",
     "docs/adr/ADR-004-processing-time-timers-are-not-replayable.md",
-    "docs/adr/ADR-005-what-this-repository-cannot-measure.md"
+    "docs/adr/ADR-005-what-this-repository-cannot-measure.md",
+    "docs/runbook.md"
   ],
   "measured_despite_a_red_suite": false,
   "metrics": {

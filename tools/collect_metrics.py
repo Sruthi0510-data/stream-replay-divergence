@@ -37,15 +37,27 @@ JUNIT = ROOT / "junit.xml"
 COVERAGE_JSON = ROOT / "coverage.json"
 METRICS_PATH = DOCS / "metrics.json"
 
-CHECKED_DOCUMENTS = [
-    "README.md",
-    "docs/runbook.md",
-    "docs/adr/ADR-001-the-log-is-not-the-run.md",
-    "docs/adr/ADR-002-the-watermark-is-evaluated-a-batch-behind.md",
-    "docs/adr/ADR-003-three-arms-and-no-more.md",
-    "docs/adr/ADR-004-processing-time-timers-are-not-replayable.md",
-    "docs/adr/ADR-005-what-this-repository-cannot-measure.md",
-]
+
+def checked_documents() -> list[str]:
+    """Every prose document in the repository, found rather than listed.
+
+    An earlier version carried a hardcoded list, and deleting a document from
+    the repository then failed the build with "listed as a checked document and
+    not present". Removing a document is an ordinary editorial act, and a
+    receipts mechanism that treats it as a build failure is a mechanism people
+    learn to edit around.
+
+    Discovery makes the set self-maintaining in both directions: a document
+    added to docs/ is checked from the moment it exists, and a document deleted
+    stops being checked without anyone having to remember a second place.
+
+    Sorted so the output is stable, and relative so the committed metrics file
+    does not record the path this happened to be built at.
+    """
+    found = [ROOT / "README.md"] if (ROOT / "README.md").exists() else []
+    found += sorted(p for p in (ROOT / "docs").rglob("*.md") if p.is_file())
+    return [str(p.relative_to(ROOT)) for p in found]
+
 
 ANCHORS: dict[str, list[str]] = {
     "tests_total": ["{} tests,"],
@@ -201,7 +213,7 @@ def build_metrics(skip_tests: bool) -> dict[str, Any]:
         "metrics": metrics,
         "table_values": table_values(),
         "anchors": ANCHORS,
-        "checked_documents": CHECKED_DOCUMENTS,
+        "checked_documents": checked_documents(),
         "measured_despite_a_red_suite": not green,
         "note": (
             "every value here is produced by running the suite and the experiments; "

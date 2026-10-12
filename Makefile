@@ -9,7 +9,7 @@ PY ?= python3
 PKG := srd
 
 .PHONY: help install lint test cover receipts tables diagrams report proof check \
-	preflight verify clean fixtures pdf
+	preflight verify clean fixtures
 
 # Exported so every target works from a bare clone, before `make install` has
 # been run. With the package installed this resolves to the same code, so the
