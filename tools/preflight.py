@@ -66,7 +66,18 @@ def _git(*args: str) -> str:
 
 
 def check_authorship(problems: list[str]) -> None:
-    authors = {line for line in _git("log", "--format=%an <%ae>").splitlines() if line}
+    """One author across the history, counting only commits that carry content.
+
+    Merge commits are excluded, and not as a convenience. On a pull request,
+    the checkout action builds the merge of the branch into the base and checks
+    that out, and the merge commit it builds is authored by GitHub. Counting it
+    made this check fail on every pull request, reporting a second author that
+    exists only because continuous integration constructed a commit to test.
+    A merge commit written by a build is not a claim of authorship over anything.
+    """
+    authors = {
+        line for line in _git("log", "--no-merges", "--format=%an <%ae>").splitlines() if line
+    }
     if len(authors) != 1:
         problems.append(f"expected one author, found {len(authors)}: {sorted(authors)}")
     else:
