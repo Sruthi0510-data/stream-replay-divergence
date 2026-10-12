@@ -45,8 +45,10 @@ cover:
 
 # Depends on nothing and runs the suite itself, with --skip-tests left to the
 # caller. A red suite surfacing as a CalledProcessError from inside a metrics
-# script costs an hour to attribute, so CI runs the suite as its own step first
-# and then calls this with the reports already on disk.
+# script costs an hour to attribute, so the suite runs as its own step first and
+# this is then called with the reports already on disk. In CI those two steps
+# are in different jobs on different machines, so the reports are carried
+# between them as an uploaded artefact rather than assumed to be on disk.
 receipts:
 	$(PY) tools/collect_metrics.py
 

@@ -81,6 +81,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: suite
+    # Named here as well as at the top of the file, because a job level block
+    # replaces the workflow level one rather than adding to it. Reading the
+    # artefacts this run produced is the only thing this job needs beyond the
+    # code.
+    permissions:
+      contents: read
+      actions: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -104,6 +111,21 @@ jobs:
       # repositories in this portfolio expose the same target names, so one
       # workflow drives them all and none of them has to teach the workflow how
       # it builds its own report.
+      # The suite job has already run pytest and uploaded its reports. This job
+      # reads them instead of running the whole suite again on a second runner,
+      # so the figure published here is the one the suite measured rather than a
+      # second measurement that happens to agree with it.
+      #
+      # The reports are not tracked, so without this step the collector meets a
+      # checkout that has never run pytest. That is exactly how this job used to
+      # fail: FileNotFoundError on junit.xml, from a tool whose own comment said
+      # that the caller runs the suite first. It did, in a different job, on a
+      # different machine, in a different checkout.
+      - name: fetch the suite's coverage and junit reports
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-3.11
+
       - name: re-measure every published figure
         run: python tools/collect_metrics.py --skip-tests
 
